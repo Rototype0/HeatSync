@@ -1,0 +1,9 @@
+{
+    "Name": "EK",
+    "ImagePath": "StaticAssets\\ProductionUnit\\electricBoiler.jpg",
+    "MaxHeat": 8.0,
+    "MaxElectricity": -8.0,
+    "ProductionCosts": 50,
+    "CO2Emissions": 0,
+    "GasConsumption": 0
+}

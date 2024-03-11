@@ -1,0 +1,9 @@
+{
+    "Name": "GB",
+    "ImagePath": "StaticAssets\\ProductionUnit\\gasBoiler.jpg",
+    "MaxHeat": 5.0,
+    "MaxElectricity": 0.0,
+    "ProductionCosts": 500,
+    "CO2Emissions": 215,
+    "GasConsumption": 1.1
+}

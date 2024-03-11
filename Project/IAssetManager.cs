@@ -2,6 +2,7 @@ namespace HeatItOn
 {
     public interface IAssetManager
     {
-        public void LoadDataFromJson();
+        public HeatingGrid LoadHeatingGridData(string filePath);
+        public ProductionUnit LoadProductionUnitData(string filePath);
     }
 }

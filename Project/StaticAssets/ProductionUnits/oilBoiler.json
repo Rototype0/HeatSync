@@ -1,0 +1,9 @@
+{
+    "Name": "OB",
+    "ImagePath": "StaticAssets\\ProductionUnit\\oilBoiler.jpg",
+    "MaxHeat": 4.0,
+    "MaxElectricity": 0,
+    "ProductionCosts": 700,
+    "CO2Emissions": 262,
+    "GasConsumption": 1.2
+}
