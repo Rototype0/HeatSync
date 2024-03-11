@@ -1,0 +1,8 @@
+{
+    "name": "GM",
+    "max Heat": "3,6",
+    "max Electricity": "2,7",
+    "productionCosts": 1100,
+    "CO2Emissions": 640,
+    "gasConsumption": "1,9"
+}

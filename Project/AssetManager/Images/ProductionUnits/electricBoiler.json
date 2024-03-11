@@ -1,0 +1,6 @@
+{
+    "name": "EK",
+    "maxHeat": "8,0",
+    "maxElectricity": "-8,0",
+    "productionCosts": 50
+}
