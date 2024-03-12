@@ -4,13 +4,11 @@ namespace HeatItOn
 {
     public class JsonAssetManager : IAssetManager
     {
-        private static TValue? LoadJsonData<TValue>(string filePath)
+        private static TValue? LoadJsonData<TValue>(string data)
         {
             try
             {
-                string jsonString = File.ReadAllText(filePath);
-                TValue jsonData = JsonSerializer.Deserialize<TValue>(jsonString)!;
-
+                TValue jsonData = JsonSerializer.Deserialize<TValue>(data)!;
                 return jsonData;
             }
             catch (FileNotFoundException)
@@ -19,13 +17,14 @@ namespace HeatItOn
             }
         }
         
-        public HeatingGrid LoadHeatingGridData(string filePath)
+        public HeatingGrid LoadHeatingGridData(string data)
         {
-            return LoadJsonData<HeatingGrid>(filePath);
+            return LoadJsonData<HeatingGrid>(data);
         }
-        public ProductionUnit LoadProductionUnitData(string filePath)
+        public ProductionUnit LoadProductionUnitData(string data)
         {
-            return LoadJsonData<ProductionUnit>(filePath);
+            return LoadJsonData<ProductionUnit>(data);
         }
+        public string ReadAllData(string filePath) => File.ReadAllText(filePath);
     }
 }
