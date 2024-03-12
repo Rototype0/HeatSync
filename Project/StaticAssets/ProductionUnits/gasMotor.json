@@ -1,0 +1,9 @@
+{
+    "Name": "GM",
+    "ImagePath": "StaticAssets\\ProductionUnit\\gasMotor.jpg",
+    "MaxHeat": 3.6,
+    "MaxElectricity": 2.7,
+    "ProductionCosts": 1100,
+    "CO2Emissions": 640,
+    "GasConsumption": 1.9
+}
