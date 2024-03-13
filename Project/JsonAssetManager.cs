@@ -25,6 +25,5 @@ namespace HeatItOn
         {
             return LoadJsonData<ProductionUnit>(data);
         }
-        public string ReadAllData(string filePath) => File.ReadAllText(filePath);
     }
 }

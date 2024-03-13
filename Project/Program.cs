@@ -9,7 +9,7 @@
 
             string testFilePath = "StaticAssets\\ProductionUnits\\oilBoiler.json";
 
-            ProductionUnit testUnit = jsonAssetManager.LoadProductionUnitData(jsonAssetManager.ReadAllData(testFilePath));
+            ProductionUnit testUnit = jsonAssetManager.LoadProductionUnitData(File.ReadAllText(testFilePath));
             Console.WriteLine("Name: " + testUnit.Name);
             Console.WriteLine("Image: " + testUnit.ImagePath);
             Console.WriteLine("MaxHeat: " + testUnit.MaxHeat);
