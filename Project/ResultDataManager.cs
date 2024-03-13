@@ -14,20 +14,30 @@ namespace HeatItOn
 
     public class ResultDataManager : IResultDataManager
     {
-        public ResultData ReadResultData(string data)
+        public List<ResultData> ReadResultData(string filePath)
         {
-            ResultData resultData = new();
-            return resultData;
-        }
-        public void WriteResultData(ResultData resultData)
-        {
-            resultData.Name = "Name";
-            resultData.HeatProduction = 0.25;
-            resultData.Electricity = 0.5;
-            resultData.NetProductionCosts = 75;
-            resultData.CO2Emissions = 75.8;
-            resultData.CO2Emissions = 4.5678;
+            List<ResultData> resultDatas = [];
+            using (var reader = new StreamReader(filePath))
+            using (var csv = new CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture))
+            {
+                var records = csv.GetRecords<ResultData>();
 
+                foreach (var item in records)
+                {
+                    resultDatas.Add(item);
+                    // Console.WriteLine(item.Name);
+                    // Console.WriteLine(item.HeatProduction);
+                    // Console.WriteLine(item.Electricity);
+                    // Console.WriteLine(item.NetProductionCosts);
+                    // Console.WriteLine(item.CO2Emissions);
+                    // Console.WriteLine(item.GasConsumption);
+                }
+            }
+
+            return resultDatas;
+        }
+        public void WriteResultData(List<ResultData> resultData)
+        {
             var records = new List<ResultData>
             {
                 new() { Name = "Name", HeatProduction = 0.25, Electricity = 0.5, NetProductionCosts = 75, CO2Emissions = 75.8, GasConsumption = 4.5678 },

@@ -2,7 +2,7 @@ namespace HeatItOn
 {
     public interface IResultDataManager
     {
-        public ResultData ReadResultData(string data);
-        public void WriteResultData(ResultData resultData);
+        public List<ResultData> ReadResultData(string filePath);
+        public void WriteResultData(List<ResultData> resultData);
     }
 }

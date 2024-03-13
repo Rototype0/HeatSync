@@ -20,9 +20,11 @@
             // Console.WriteLine("GasConsumption: " + testUnit.GasConsumption);
 
             ResultDataManager resultDataManager = new();
-            ResultData resultData = new();
+            List<ResultData> resultData = [];
 
             resultDataManager.WriteResultData(resultData);
+
+            resultData = resultDataManager.ReadResultData("test.csv");
         }
     }
 }
