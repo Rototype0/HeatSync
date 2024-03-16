@@ -18,7 +18,7 @@ namespace HeatItOn.Tests
         }
         
         [Fact]
-        public void LoadProductionUnitData_ValidFilePath_ReturnsProductionUnit()
+        public void LoadProductionUnitData_ReturnsProductionUnit()
         {
             // Arrange
             string testString = @"{""Name"":""TestProductionUnit"",""ImagePath"":""test_image.jpg"",""MaxHeat"":100.0,""MaxElectricity"":50.0,""ProductionCosts"":500,""CO2Emissions"":25.0,""GasConsumption"":10.0}";
