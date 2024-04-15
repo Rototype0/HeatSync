@@ -1,11 +1,60 @@
 namespace HeatItOn.Tests
 {
-    // Testing each method for calculating production costs from Optmizer class 
-
     public class OptimizerTests
     {
-        // Kinda of an useless test, because in the method, it's just value copying, but I'll leave it here :))
+        private ProductionUnit gasMotorUnit;
+        private ProductionUnit electricBoilerUnit;
+        private SDMData sourceDataPoint;
+        public Optimizer optimizer = new();
+
+        public OptimizerTests()
+        {
+            gasMotorUnit = new ProductionUnit
+            {
+                ProductionCosts = 1000,
+                MaxElectricity = 50
+            };
+
+            electricBoilerUnit = new ProductionUnit
+            {
+                ProductionCosts = 1200,
+                MaxElectricity = -30
+            };
+
+            sourceDataPoint = new SDMData
+            {
+                ElectricityPrice = 0.1
+            };
+        }
+
         [Fact]
+        public void CalculateNetProductionCost_GasMotorUnit_CorrectCalculation()
+        {
+            double expectedNetCost = 1000 - (50 * 0.1);
+            double actualNetCost = optimizer.CalculateNetProductionCost(gasMotorUnit, sourceDataPoint);
+            Assert.Equal(expectedNetCost, actualNetCost);
+        }
+
+        [Fact]
+        public void CalculateNetProductionCost_ElectricBoilerUnit_CorrectCalculation()
+        {
+            double expectedNetCost = 1200 - (-30 * 0.1);
+            double actualNetCost = optimizer.CalculateNetProductionCost(electricBoilerUnit, sourceDataPoint);
+            Assert.Equal(expectedNetCost, actualNetCost);
+        }
+
+        [Fact]
+        public void GetLowestNetProductionCostUnit_ReturnsLowestCostUnit()
+        {
+            List<ProductionUnit> productionUnits = [gasMotorUnit, electricBoilerUnit];
+            ProductionUnit expectedUnit = gasMotorUnit; // Assuming gasMotorUnit has the lowest cost
+            ProductionUnit actualUnit = optimizer.GetLowestNetProductionCostUnit(productionUnits, sourceDataPoint);
+            Assert.Equal(expectedUnit, actualUnit);
+        }
+
+        
+        // Kinda of an useless test, because in the method, it's just value copying, but I'll leave it here :))
+        /*[Fact]
         public void CalculateNetProdCostHeatOnly_CorrectGBNetProductionCost()
         {
             // Arrange
@@ -53,6 +102,6 @@ namespace HeatItOn.Tests
             // Assert
             Assert.Equal(500,electricBoiler.ProductionCosts);
 
-        }
+        }*/
     }
 }

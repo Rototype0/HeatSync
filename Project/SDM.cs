@@ -7,9 +7,9 @@ namespace HeatItOn
     public struct SDMData
     {
         public DateTime CurrentTime { get; set; }
-        public float TimeSinceLastUpdate { get; set; }
-        public float HeatDemand { get; set; }
-        public float ElecticityPrice { get; set; }
+        public double TimeSinceLastUpdate { get; set; }
+        public double HeatDemand { get; set; }
+        public double ElectricityPrice { get; set; }
     }
     public class SDM
     {
@@ -29,6 +29,21 @@ namespace HeatItOn
         {
             this.FileName = FileName;
             SetTimer(SaveInterval);
+        }
+
+        public List<SDMData> ReadSourceData(string fileName)
+        {
+            try
+            {
+                using var reader = new StreamReader("SourceData\\" + fileName + ".csv");
+                using var csv = new CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture);
+                var records = csv.GetRecords<SDMData>();
+                return records.ToList();
+            }
+            catch (FileNotFoundException)
+            {
+                throw;
+            }
         }
 
         public void UpdateSDMData( SDMData Data) 
