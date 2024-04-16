@@ -4,7 +4,7 @@ namespace HeatItOn.Tests
     {
         private ProductionUnit gasMotorUnit;
         private ProductionUnit electricBoilerUnit;
-        private SDMData sourceDataPoint;
+        private SourceData sourceDataPoint;
         public Optimizer optimizer = new();
 
         public OptimizerTests()
@@ -21,7 +21,7 @@ namespace HeatItOn.Tests
                 MaxElectricity = -30
             };
 
-            sourceDataPoint = new SDMData
+            sourceDataPoint = new SourceData
             {
                 ElectricityPrice = 0.1
             };

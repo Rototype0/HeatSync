@@ -4,7 +4,7 @@ namespace HeatItOn
     {
         // For gas motor, net prod costs = prod costs - Max Electricity * Electricity price
         // For Electric Boiler, net prod costs = prod costs + Max Electricity * Electricity price
-        public double CalculateNetProductionCost(ProductionUnit productionUnit, SDMData sourceDataPoint)
+        public double CalculateNetProductionCost(ProductionUnit productionUnit, SourceData sourceDataPoint)
         {
             double netProductionCost = productionUnit.ProductionCosts;
             double electricityPrice = sourceDataPoint.ElectricityPrice;
@@ -12,7 +12,7 @@ namespace HeatItOn
             return netProductionCost;
         }
 
-        public ProductionUnit GetLowestNetProductionCostUnit(List<ProductionUnit> productionUnits, SDMData sourceDataPoint)
+        public ProductionUnit GetLowestNetProductionCostUnit(List<ProductionUnit> productionUnits, SourceData sourceDataPoint)
         {
             ProductionUnit lowestCostUnit = new();
             double lowestCost = double.MaxValue;
@@ -30,47 +30,73 @@ namespace HeatItOn
             return lowestCostUnit;
         }
 
-        private ResultData CalculateResultDataPoint(List<ProductionUnit> productionUnits, SDMData sourceDataPoint)
+        public ResultData ChangeOperationalPercentage(ResultData originalData, double newPercentage)
         {
-            // TODO: handle sub operation points here
-            ResultData resultData = new();
-            return resultData;
+            originalData.OperationPercentage = newPercentage;
+            originalData.ProducedHeat *= newPercentage;
+            originalData.NetElectricity *= newPercentage;
+            originalData.ProducedCO2 *= newPercentage;
+            originalData.PrimaryEnergyConsumption *= newPercentage;
+            originalData.ProductionCosts = (int)(originalData.ProductionCosts * newPercentage); // TODO: look into how this would be rounded
+            
+            return originalData;
+        }
+
+        // Returns a list of ResultData for meeting heat demand of a single time interval (in this case, a single hour) from a source data point.
+
+        // TODO: secure heat availability? could be a unit test
+        // also ensure list sizes of SDM and RDM data are the same in unit tests (nvm)
+        private List<ResultData> CalculateResultDataForInterval(List<ProductionUnit> productionUnits, SourceData sourceDataPoint)
+        {
+            List<ResultData> resultDatas = [];
+            List<ProductionUnit> unusedProductionUnits = productionUnits;
+
+            double currentHeatDemand = sourceDataPoint.HeatDemand;
+
+            while (currentHeatDemand > 0)
+            {
+                // throw exception here if we exhausted all prod units and heat demand still not met?
+
+                ProductionUnit cheapestUnit = GetLowestNetProductionCostUnit(unusedProductionUnits, sourceDataPoint);
+                unusedProductionUnits.Remove(cheapestUnit);
+                
+                // after calculations are done, make sure to add separate result datapoints for each production unit.
+                // as a result, if we use 3 prod units for each hour and we have 50 source data points, we should have 150 result data points
+                ResultData resultData = new()
+                {
+                    ProductionUnitName = cheapestUnit.Name,
+                    ProducedHeat = cheapestUnit.MaxHeat,
+                    NetElectricity = cheapestUnit.MaxElectricity,
+                    ProductionCosts = cheapestUnit.ProductionCosts,
+                    ProducedCO2 = cheapestUnit.CO2Emissions,
+                    PrimaryEnergyConsumption = cheapestUnit.GasConsumption,
+                    OperationPercentage = 1
+                };
+
+                // Use lowest cost unit at some or full capacity (depending on heat demand)
+                // If heat demand still not met for the hour, repeat and find the next cheapest net prod cost unit
+                // TODO: handle sub operation points here, result data will need an operation percentage too
+                if (cheapestUnit.MaxHeat > currentHeatDemand)
+                {
+                    double newPercentage = Math.Round((cheapestUnit.MaxHeat - currentHeatDemand) / cheapestUnit.MaxHeat * 100, 2);
+                    resultData = ChangeOperationalPercentage(resultData, newPercentage);
+                    currentHeatDemand -= cheapestUnit.MaxHeat * newPercentage;
+                }
+                else
+                    currentHeatDemand -= cheapestUnit.MaxHeat;
+
+                resultDatas.Add(resultData);
+            }
+            return resultDatas;
         }
         
-        // secure heat availability? could be a unit test
-        // also ensure list sizes of SDM and RDM data are the same in unit tests
-        public List<ResultData> OptimizeData(List<ProductionUnit> productionUnits, List<SDMData> sourceData)
+        public List<ResultData> OptimizeData(List<ProductionUnit> productionUnits, List<SourceData> sourceData)
         {
-            /*
-            TODO:
-            - fetch List<SourceData>
-            - fetch List<ProductionUnit>
-            - fetch HeatingGrid
-            - get start/end point, and interval from source data
-            - For each hour:
-                - Find lowest net prod cost unit
-                - Use lowest cost unit at some or full capacity (depending on heat demand)
-                - If heat demand still not met for the hour, repeat and find the next cheapest net prod cost unit
-            */
-
             List<ResultData> resultDatas = [];
-            foreach (SDMData sourceDataPoint in sourceData)
+            foreach (SourceData sourceDataPoint in sourceData)
             {
-                foreach (ProductionUnit productionUnit in productionUnits)
-                {
-                    CalculateNetProductionCost(productionUnit, sourceDataPoint);
-
-                    // after calculations are done, make sure to add separate result datapoints for each production unit.
-                    // as a result, if we use 3 prod units for each hour and we have 50 source data points, we should have 150 result data points
-                    ResultData resultData = new();
-                    resultData.ProductionUnitName = "test";
-                    resultData.ProducedHeat = 0;
-                    resultData.NetElectricity = 0;
-                    resultData.ProductionCosts = 0;
-                    resultData.ProducedCO2 = 0;
-                    resultData.PrimaryEnergyConsumption = 0;
-                    resultDatas.Add(resultData);
-                }
+                List<ResultData> intervalResultDatas = CalculateResultDataForInterval(productionUnits, sourceDataPoint);
+                resultDatas.AddRange(intervalResultDatas);
             }
             return resultDatas;
         }

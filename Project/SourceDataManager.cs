@@ -4,14 +4,14 @@ using System.Timers;
 
 namespace HeatItOn
 {
-    public struct SDMData
+    public struct SourceData
     {
         public DateTime CurrentTime { get; set; }
         public double TimeSinceLastUpdate { get; set; }
         public double HeatDemand { get; set; }
         public double ElectricityPrice { get; set; }
     }
-    public class SDM
+    public class SourceDataManager
     {
         private string fileName;
 
@@ -21,23 +21,22 @@ namespace HeatItOn
             set { fileName = value; }
         }
 
-        private SDMData CurrentSDMData;
+        private SourceData CurrentSourceData;
         private System.Timers.Timer SaveTimer;
 
-
-        public SDM(string FileName, float SaveInterval)
+        public SourceDataManager(string FileName, float SaveInterval)
         {
             this.FileName = FileName;
             SetTimer(SaveInterval);
         }
 
-        public List<SDMData> ReadSourceData(string fileName)
+        public List<SourceData> ReadSourceData(string fileName)
         {
             try
             {
                 using var reader = new StreamReader("SourceData\\" + fileName + ".csv");
                 using var csv = new CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture);
-                var records = csv.GetRecords<SDMData>();
+                var records = csv.GetRecords<SourceData>();
                 return records.ToList();
             }
             catch (FileNotFoundException)
@@ -46,9 +45,9 @@ namespace HeatItOn
             }
         }
 
-        public void UpdateSDMData( SDMData Data) 
+        public void UpdateSourceData( SourceData Data) 
         {
-            CurrentSDMData = Data;
+            CurrentSourceData = Data;
         }
 
         private void SetTimer(float SaveInterval)
@@ -68,24 +67,24 @@ namespace HeatItOn
                 using (var writer = new StreamWriter(FileName))
                 using (var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
                 {
-                    csv.WriteRecord(CurrentSDMData);
+                    csv.WriteRecord(CurrentSourceData);
                 }
             }
             else
             {
-                IEnumerable<SDMData> CSVRecords = new List<SDMData>();
+                IEnumerable<SourceData> CSVRecords = new List<SourceData>();
 
                 using (var reader = new StreamReader(FileName))
                 using (var csv = new CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture))
                 {
-                    CSVRecords = csv.GetRecords<SDMData>();
+                    CSVRecords = csv.GetRecords<SourceData>();
                 }
 
                 using (var writer = new StreamWriter(FileName))
                 using (var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
                 {
                     csv.WriteRecords(CSVRecords);
-                    csv.WriteRecord(CurrentSDMData);
+                    csv.WriteRecord(CurrentSourceData);
                 }
             }
         }
