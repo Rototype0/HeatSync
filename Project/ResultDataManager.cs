@@ -4,6 +4,8 @@ namespace HeatItOn
 {
     public struct ResultData
     {
+        public DateTime TimeFrom { get; set; }
+        public DateTime TimeTo { get; set; }
         public string ProductionUnitName { get; set; }
         public double ProducedHeat { get; set; }
         public double NetElectricity { get; set; }

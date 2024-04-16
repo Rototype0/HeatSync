@@ -6,8 +6,11 @@ namespace HeatItOn
 {
     public struct SourceData
     {
-        public DateTime CurrentTime { get; set; }
-        public double TimeSinceLastUpdate { get; set; }
+        //public DateTime CurrentTime { get; set; }
+        //public double TimeSinceLastUpdate { get; set; }
+
+        public DateTime TimeFrom { get; set; }
+        public DateTime TimeTo { get; set; }
         public double HeatDemand { get; set; }
         public double ElectricityPrice { get; set; }
     }

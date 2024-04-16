@@ -4,23 +4,25 @@
     {
         private static void Main(string[] args)
         {
-            string sourceDataPath = "StaticAssets\\ProductionUnits\\electricBoiler.json"; // temp
+            string sourceDataPath = "wintertest"; // can be "summertest" or "wintertest"
 
-            string gasBoilerPath = "StaticAssets\\ProductionUnits\\gasBoiler.json";
-            string oilBoilerPath = "StaticAssets\\ProductionUnits\\oilBoiler.json";
-            string gasMotorPath = "StaticAssets\\ProductionUnits\\gasMotor.json";
-            string electricBoilerPath = "StaticAssets\\ProductionUnits\\electricBoiler.json";
-
+            List<ProductionUnit> productionUnits = [];
             JsonAssetManager jsonAssetManager = new();
             SourceDataManager sourceDataManager = new(sourceDataPath, 1000); // temp
             ResultDataManager resultDataManager = new();
             Optimizer optimizer = new();
-
-            List<ProductionUnit> productionUnits = [];
-
+            
+            // comment out whichever one you want to remove from the list that optimizer uses
+            string gasBoilerPath = "StaticAssets\\ProductionUnits\\gasBoiler.json";
             productionUnits.Add(jsonAssetManager.LoadProductionUnitData(File.ReadAllText(gasBoilerPath)));
+
+            string oilBoilerPath = "StaticAssets\\ProductionUnits\\oilBoiler.json";
             productionUnits.Add(jsonAssetManager.LoadProductionUnitData(File.ReadAllText(oilBoilerPath)));
+
+            string gasMotorPath = "StaticAssets\\ProductionUnits\\gasMotor.json";
             productionUnits.Add(jsonAssetManager.LoadProductionUnitData(File.ReadAllText(gasMotorPath)));
+
+            string electricBoilerPath = "StaticAssets\\ProductionUnits\\electricBoiler.json";
             productionUnits.Add(jsonAssetManager.LoadProductionUnitData(File.ReadAllText(electricBoilerPath)));
             
             /*var writeRecords = new List<ResultData>
@@ -33,7 +35,7 @@
             string fileName = "ResultDataTest";
             resultDataManager.WriteResultData(writeRecords, fileName);
 
-            var readRecords = resultDataManager.ReadResultData(fileName);
+            /*var readRecords = resultDataManager.ReadResultData(fileName);
 
             foreach (var item in readRecords)
             {
@@ -44,7 +46,7 @@
                 Console.WriteLine(item.ProducedCO2);
                 Console.WriteLine(item.PrimaryEnergyConsumption);
                 Console.WriteLine(item.OperationPercentage);
-            }
+            }*/
         }
     }
 }

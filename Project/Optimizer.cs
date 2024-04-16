@@ -49,21 +49,27 @@ namespace HeatItOn
         private List<ResultData> CalculateResultDataForInterval(List<ProductionUnit> productionUnits, SourceData sourceDataPoint)
         {
             List<ResultData> resultDatas = [];
-            List<ProductionUnit> unusedProductionUnits = productionUnits;
+
+            List<ProductionUnit> unusedProductionUnits = productionUnits.ToList();
 
             double currentHeatDemand = sourceDataPoint.HeatDemand;
 
-            while (currentHeatDemand > 0)
+            while (currentHeatDemand > 0.0)
             {
                 // throw exception here if we exhausted all prod units and heat demand still not met?
-
+                if (unusedProductionUnits.Count == 0 && currentHeatDemand > 0)
+                {
+                    Console.WriteLine("oh no"); // if we're here, something's gone real wrong lmao
+                    Thread.Sleep(5000);
+                }
+                
                 ProductionUnit cheapestUnit = GetLowestNetProductionCostUnit(unusedProductionUnits, sourceDataPoint);
                 unusedProductionUnits.Remove(cheapestUnit);
                 
-                // after calculations are done, make sure to add separate result datapoints for each production unit.
-                // as a result, if we use 3 prod units for each hour and we have 50 source data points, we should have 150 result data points
                 ResultData resultData = new()
                 {
+                    TimeFrom = sourceDataPoint.TimeFrom,
+                    TimeTo = sourceDataPoint.TimeTo,
                     ProductionUnitName = cheapestUnit.Name,
                     ProducedHeat = cheapestUnit.MaxHeat,
                     NetElectricity = cheapestUnit.MaxElectricity,
@@ -73,18 +79,15 @@ namespace HeatItOn
                     OperationPercentage = 1
                 };
 
-                // Use lowest cost unit at some or full capacity (depending on heat demand)
-                // If heat demand still not met for the hour, repeat and find the next cheapest net prod cost unit
-                // TODO: handle sub operation points here, result data will need an operation percentage too
                 if (cheapestUnit.MaxHeat > currentHeatDemand)
                 {
-                    double newPercentage = Math.Round((cheapestUnit.MaxHeat - currentHeatDemand) / cheapestUnit.MaxHeat * 100, 2);
+                    double newPercentage = currentHeatDemand / cheapestUnit.MaxHeat;
                     resultData = ChangeOperationalPercentage(resultData, newPercentage);
-                    currentHeatDemand -= cheapestUnit.MaxHeat * newPercentage;
+                    currentHeatDemand = Math.Round(currentHeatDemand - cheapestUnit.MaxHeat * newPercentage, 2);
                 }
                 else
-                    currentHeatDemand -= cheapestUnit.MaxHeat;
-
+                    currentHeatDemand = Math.Round(currentHeatDemand - cheapestUnit.MaxHeat, 2);
+                
                 resultDatas.Add(resultData);
             }
             return resultDatas;
