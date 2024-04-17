@@ -2,8 +2,10 @@ namespace HeatItOn
 {
     public class Optimizer : IOptimizer
     {
-        // For gas motor, net prod costs = prod costs - Max Electricity * Electricity price
-        // For Electric Boiler, net prod costs = prod costs + Max Electricity * Electricity price
+        // Calculates the net production cost of a specific unit.
+        // The net production costs for heat only boilers are the productions costs themselves. 
+        // For electricity producing units, net production costs = production costs minus the value of the electricity that can be sold.
+        // For electricity consuming units, net production costs = production costs plus the value of the electricity that has to be purchased.
         public double CalculateNetProductionCost(ProductionUnit productionUnit, SourceData sourceDataPoint)
         {
             double netProductionCost = productionUnit.ProductionCosts;
@@ -12,6 +14,7 @@ namespace HeatItOn
             return netProductionCost;
         }
 
+        // Gets the lowest net cost production unit out of a given list in a specific time interval.
         public ProductionUnit GetLowestNetProductionCostUnit(List<ProductionUnit> productionUnits, SourceData sourceDataPoint)
         {
             ProductionUnit lowestCostUnit = new();
@@ -30,23 +33,23 @@ namespace HeatItOn
             return lowestCostUnit;
         }
 
-        public ResultData ChangeOperationalPercentage(ResultData originalData, double newPercentage)
+        // Tweaks data of a single data point to match the provided operation percentage (from 0.0 to 1.0)
+        // roundToDigits can be used to round up each variable to a specific amount of numbers after the decimal point.
+        public ResultData ChangeOperationalPercentage(ResultData originalData, double newPercentage, int roundToDigits)
         {
-            originalData.OperationPercentage = newPercentage;
-            originalData.ProducedHeat *= newPercentage;
-            originalData.NetElectricity *= newPercentage;
-            originalData.ProducedCO2 *= newPercentage;
-            originalData.PrimaryEnergyConsumption *= newPercentage;
-            originalData.ProductionCosts = (int)(originalData.ProductionCosts * newPercentage); // TODO: look into how this would be rounded
+            // TODO: this may round values down to the point where it doesn't meet heat demand, check to make sure
+            originalData.OperationPercentage = Math.Round(newPercentage, roundToDigits);
+            originalData.ProducedHeat = Math.Round(originalData.ProducedHeat * newPercentage, roundToDigits);
+            originalData.NetElectricity = Math.Round(originalData.NetElectricity * newPercentage, roundToDigits);
+            originalData.ProducedCO2 = Math.Round(originalData.ProducedCO2 * newPercentage, roundToDigits);
+            originalData.PrimaryEnergyConsumption = Math.Round(originalData.PrimaryEnergyConsumption * newPercentage, roundToDigits);
+            originalData.ProductionCosts = Math.Round(originalData.ProductionCosts * newPercentage, roundToDigits);
             
             return originalData;
         }
 
         // Returns a list of ResultData for meeting heat demand of a single time interval (in this case, a single hour) from a source data point.
-
-        // TODO: secure heat availability? could be a unit test
-        // also ensure list sizes of SDM and RDM data are the same in unit tests (nvm)
-        private List<ResultData> CalculateResultDataForInterval(List<ProductionUnit> productionUnits, SourceData sourceDataPoint)
+        private List<ResultData> CalculateResultDataForInterval(List<ProductionUnit> productionUnits, SourceData sourceDataPoint, int roundToDigits)
         {
             List<ResultData> resultDatas = [];
 
@@ -56,11 +59,11 @@ namespace HeatItOn
 
             while (currentHeatDemand > 0.0)
             {
-                // throw exception here if we exhausted all prod units and heat demand still not met?
+                // In cases where all production units are being used and heat demand is still not met, use everything available.
                 if (unusedProductionUnits.Count == 0 && currentHeatDemand > 0)
                 {
-                    Console.WriteLine("oh no"); // if we're here, something's gone real wrong lmao
-                    Thread.Sleep(5000);
+                    Console.WriteLine("Unable to meet heat demand for time interval " + sourceDataPoint.TimeFrom + " to " + sourceDataPoint.TimeTo);
+                    return resultDatas;
                 }
                 
                 ProductionUnit cheapestUnit = GetLowestNetProductionCostUnit(unusedProductionUnits, sourceDataPoint);
@@ -79,10 +82,11 @@ namespace HeatItOn
                     OperationPercentage = 1
                 };
 
+                // Don't run unit on max operation if heat demand is less than unit's max heat.
                 if (cheapestUnit.MaxHeat > currentHeatDemand)
                 {
                     double newPercentage = currentHeatDemand / cheapestUnit.MaxHeat;
-                    resultData = ChangeOperationalPercentage(resultData, newPercentage);
+                    resultData = ChangeOperationalPercentage(resultData, newPercentage, roundToDigits);
                     currentHeatDemand = Math.Round(currentHeatDemand - cheapestUnit.MaxHeat * newPercentage, 2);
                 }
                 else
@@ -93,45 +97,15 @@ namespace HeatItOn
             return resultDatas;
         }
         
-        public List<ResultData> OptimizeData(List<ProductionUnit> productionUnits, List<SourceData> sourceData)
+        public List<ResultData> OptimizeData(List<ProductionUnit> productionUnits, List<SourceData> sourceData, int roundToDigits = 2)
         {
             List<ResultData> resultDatas = [];
             foreach (SourceData sourceDataPoint in sourceData)
             {
-                List<ResultData> intervalResultDatas = CalculateResultDataForInterval(productionUnits, sourceDataPoint);
+                List<ResultData> intervalResultDatas = CalculateResultDataForInterval(productionUnits, sourceDataPoint, roundToDigits);
                 resultDatas.AddRange(intervalResultDatas);
             }
             return resultDatas;
         }
-
-        // Method for calculating net production costs only for Gas Boiler and Oil Boiler
-        // Net prod cost are prod cost themselves
-        public void CalculateNetProdCostHeatOnly(ProductionUnit productionUnit)
-        {
-            ResultData resultDataHeatOnlyUnit = new();
-            resultDataHeatOnlyUnit.ProductionUnitName = productionUnit.Name;
-            resultDataHeatOnlyUnit.ProductionCosts = productionUnit.ProductionCosts;
-        }
-        
-        public void CalculateNetProdCostGasMotor(ProductionUnit productionUnit)
-        {
-            // SDM gasMotorSDM = new();
-            ResultData resultDataGasMotor = new();
-            resultDataGasMotor.ProductionUnitName = productionUnit.Name;
-            
-
-
-        }
-        
-        public void CalculateNetProdCostElectricBoiler(ProductionUnit productionUnit)
-        {
-            
-        }
-        public void CompareNetProdCosts()
-        {
-
-        }
-
-
     }
 }
