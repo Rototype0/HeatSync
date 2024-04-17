@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using System.Data;
 using System.Timers;
+using System.Text.Json;
 
 namespace HeatItOn
 {
@@ -14,8 +15,47 @@ namespace HeatItOn
         public double HeatDemand { get; set; }
         public double ElectricityPrice { get; set; }
     }
+
+    public class APIRecord
+    {
+        public DateTime HourDK { get; set; }
+        public double SpotPriceDKK { get; set; }
+    }
+    public class APIRecords
+    {
+        public List<APIRecord>? records { get; set; } // FIXME: if this variable name is Capitalized, this no longer works for some reason?
+    }
     public class SourceDataManager
     {
+        static readonly HttpClient client = new();
+        public static async Task<List<SourceData>> GetEnerginetElectricityPrices()
+        {
+            Random random = new();
+            List<SourceData> sourceData = [];
+            // dataset=Elspotprices; start=now-P6D; columns=HourDK,SpotPriceDKK; filter={PriceArea=["DK1"]}; sort=HourDK; limit=0
+            string url = "https://api.energidataservice.dk/dataset/Elspotprices?start=now-P6D&columns=HourDK%2CSpotPriceDKK&filter=%7B%22PriceArea%22%3A%5B%22DK1%22%5D%7D&sort=HourDK&limit=0";
+            HttpResponseMessage response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsByteArrayAsync();
+                APIRecords recordList = JsonSerializer.Deserialize<APIRecords>(content)!;
+                if (recordList.records == null)
+                    return sourceData;
+                foreach (APIRecord record in recordList.records)
+                {
+                    SourceData sourceDataPoint = new()
+                    {
+                        TimeFrom = record.HourDK,
+                        TimeTo = record.HourDK.AddHours(1),
+                        HeatDemand = random.NextDouble() * 10, // randomized from 0 to 10.0 since we can't pull heat demand data from APIs at the moment
+                        ElectricityPrice = record.SpotPriceDKK
+                    };
+                    sourceData.Add(sourceDataPoint);
+                }
+            }
+            return sourceData;
+        }
+
         private string fileName;
 
         public string FileName
@@ -30,7 +70,7 @@ namespace HeatItOn
         public SourceDataManager(string FileName, float SaveInterval)
         {
             this.FileName = FileName;
-            SetTimer(SaveInterval);
+            //SetTimer(SaveInterval);
         }
 
         public List<SourceData> ReadSourceData(string fileName)

@@ -11,10 +11,21 @@
             ResultDataManager resultDataManager = new();
             Optimizer optimizer = new();
 
+            Task<List<SourceData>> taskData = SourceDataManager.GetEnerginetElectricityPrices();
+            List<SourceData> data = taskData.Result;
+            
+            /*foreach (SourceData dataPoint in data)
+            {
+                Console.WriteLine(dataPoint.TimeFrom);
+                Console.WriteLine(dataPoint.TimeTo);
+                Console.WriteLine(dataPoint.HeatDemand);
+                Console.WriteLine(dataPoint.ElectricityPrice);
+            }*/
+            
             List<ProductionUnit> productionUnits = jsonAssetManager.GetAllProductionUnits();
-            List<ResultData> writeRecords = optimizer.OptimizeData(productionUnits, sourceDataManager.ReadSourceData(sourceDataPath));
+            List<ResultData> writeRecords = optimizer.OptimizeData(productionUnits, data/*sourceDataManager.ReadSourceData(sourceDataPath)*/);
 
-            Console.WriteLine("Test writing result data");
+            //Console.WriteLine("Test writing result data");
             string fileName = "ResultDataTest";
             resultDataManager.WriteResultData(writeRecords, fileName);
 
