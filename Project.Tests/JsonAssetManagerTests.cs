@@ -6,15 +6,17 @@ namespace HeatItOn.Tests
         public void LoadHeatingGridData_ReturnsHeatingGrid()
         {
             // Arrange
-            string testString = @"{""Name"":""TestHeatingGrid"",""ImagePath"":""test_image.jpg""}";
+            string testString = @"{""City"":""Sarajevo"",""ImagePath"":""test_image.jpg"",""Architecture"":""single district heating network"",""Size"":""10 buildings""}";
             JsonAssetManager jsonAssetManager = new();
 
             // Act
             HeatingGrid heatingGrid = jsonAssetManager.LoadHeatingGridData(testString);
 
             // Assert
-            Assert.Equal("TestHeatingGrid", heatingGrid.Name);
+            Assert.Equal("Sarajevo", heatingGrid.City);
             Assert.Equal("test_image.jpg", heatingGrid.ImagePath);
+            Assert.Equal("single district heating network", heatingGrid.Architecture);
+            Assert.Equal("10 buildings", heatingGrid.Size);
         }
         
         [Fact]

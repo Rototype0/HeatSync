@@ -1,4 +1,6 @@
 {
-    "Name": "Heatington",
-    "ImagePath": "StaticAssets\\HeatingGrids\\heatington.jpg"
+    "City": "Heatington",
+    "ImagePath": "StaticAssets\\HeatingGrids\\heatington.jpg",
+    "Architecture": "single district heating network",
+    "Size": "1600 buildings"
 }
