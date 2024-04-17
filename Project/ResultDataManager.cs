@@ -2,6 +2,18 @@ using CsvHelper;
 
 namespace HeatItOn
 {
+    public struct ResultData
+    {
+        public DateTime TimeFrom { get; set; }
+        public DateTime TimeTo { get; set; }
+        public string ProductionUnitName { get; set; }
+        public double ProducedHeat { get; set; }
+        public double NetElectricity { get; set; }
+        public double ProductionCosts { get; set; }
+        public double ProducedCO2 { get; set; }
+        public double PrimaryEnergyConsumption { get; set; }
+        public double OperationPercentage { get; set; }
+    }
     public class ResultDataManager : IResultDataManager
     {
         public List<ResultData> ReadResultData(string fileName)
