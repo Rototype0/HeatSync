@@ -25,5 +25,17 @@ namespace HeatItOn
         {
             return LoadJsonData<ProductionUnit>(data);
         }
+
+        // Helper method for getting all valid production units quickly.
+        public List<ProductionUnit> GetAllProductionUnits()
+        {
+            List<ProductionUnit> productionUnits = [];
+
+            string[] prodUnitPaths = Directory.GetFiles("StaticAssets\\ProductionUnits", "*.json");
+            foreach (string prodUnitPath in prodUnitPaths)
+                productionUnits.Add(LoadProductionUnitData(File.ReadAllText(prodUnitPath)));
+            
+            return productionUnits;
+        }
     }
 }
