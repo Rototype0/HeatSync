@@ -71,7 +71,7 @@ namespace HeatItOn.Tests
             };
 
             double newPercentage = 0.5;
-            ResultData updatedData = optimizer.ChangeOperationalPercentage(originalData, newPercentage, 2);
+            ResultData updatedData = optimizer.ChangeOperationalPercentage(originalData, newPercentage);
 
             Assert.Equal(newPercentage, updatedData.OperationPercentage);
             Assert.Equal(originalData.ProducedHeat * newPercentage, updatedData.ProducedHeat);
@@ -108,7 +108,7 @@ namespace HeatItOn.Tests
                     ElectricityPrice = 0.12
                 }
             ];
-
+            
             // Expected result data
             List<ResultData> expectedResults =
             [
@@ -130,11 +130,11 @@ namespace HeatItOn.Tests
                     TimeTo = sourceData[0].TimeTo,
                     ProductionUnitName = "Boiler 2",
                     ProducedHeat = 30,
-                    NetElectricity = 12.86,
-                    ProductionCosts = 514.29,
-                    ProducedCO2 = 25.71,
-                    PrimaryEnergyConsumption = 51.43,
-                    OperationPercentage = 0.43
+                    NetElectricity = 12.857142857142856,
+                    ProductionCosts = 514.2857142857142,
+                    ProducedCO2 = 25.71428571428571,
+                    PrimaryEnergyConsumption = 51.42857142857142,
+                    OperationPercentage = 0.42857142857142855
                 },
                 new ResultData
                 {
@@ -154,16 +154,16 @@ namespace HeatItOn.Tests
                     TimeTo = sourceData[1].TimeTo,
                     ProductionUnitName = "Boiler 2",
                     ProducedHeat = 40,
-                    NetElectricity = 17.14,
-                    ProductionCosts = 685.71,
-                    ProducedCO2 = 34.29,
-                    PrimaryEnergyConsumption = 68.57,
-                    OperationPercentage = 0.57
+                    NetElectricity = 17.142857142857142,
+                    ProductionCosts = 685.7142857142857,
+                    ProducedCO2 = 34.285714285714285,
+                    PrimaryEnergyConsumption = 68.57142857142857,
+                    OperationPercentage = 0.5714285714285714
                 }
             ];
 
             // Get actual results
-            List<ResultData> actualResults = optimizer.OptimizeData(productionUnits, sourceData, 2);
+            List<ResultData> actualResults = optimizer.OptimizeData(productionUnits, sourceData);
 
             // Compare actual and expected results
             Assert.Equal(expectedResults, actualResults);

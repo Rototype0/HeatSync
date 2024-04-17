@@ -34,22 +34,20 @@ namespace HeatItOn
         }
 
         // Tweaks data of a single data point to match the provided operation percentage (from 0.0 to 1.0)
-        // roundToDigits can be used to round up each variable to a specific amount of numbers after the decimal point.
-        public ResultData ChangeOperationalPercentage(ResultData originalData, double newPercentage, int roundToDigits)
+        public ResultData ChangeOperationalPercentage(ResultData originalData, double newPercentage)
         {
-            // TODO: this may round values down to the point where it doesn't meet heat demand, check to make sure
-            originalData.OperationPercentage = Math.Round(newPercentage, roundToDigits);
-            originalData.ProducedHeat = Math.Round(originalData.ProducedHeat * newPercentage, roundToDigits);
-            originalData.NetElectricity = Math.Round(originalData.NetElectricity * newPercentage, roundToDigits);
-            originalData.ProducedCO2 = Math.Round(originalData.ProducedCO2 * newPercentage, roundToDigits);
-            originalData.PrimaryEnergyConsumption = Math.Round(originalData.PrimaryEnergyConsumption * newPercentage, roundToDigits);
-            originalData.ProductionCosts = Math.Round(originalData.ProductionCosts * newPercentage, roundToDigits);
+            originalData.OperationPercentage = newPercentage;
+            originalData.ProducedHeat *= newPercentage;
+            originalData.NetElectricity *= newPercentage;
+            originalData.ProducedCO2 *= newPercentage;
+            originalData.PrimaryEnergyConsumption *= newPercentage;
+            originalData.ProductionCosts *= newPercentage;
             
             return originalData;
         }
 
         // Returns a list of ResultData for meeting heat demand of a single time interval (in this case, a single hour) from a source data point.
-        private List<ResultData> CalculateResultDataForInterval(List<ProductionUnit> productionUnits, SourceData sourceDataPoint, int roundToDigits)
+        private List<ResultData> CalculateResultDataForInterval(List<ProductionUnit> productionUnits, SourceData sourceDataPoint)
         {
             List<ResultData> resultDatas = [];
 
@@ -83,26 +81,28 @@ namespace HeatItOn
                 };
 
                 // Don't run unit on max operation if heat demand is less than unit's max heat.
+                double newPercentage = 1;
                 if (cheapestUnit.MaxHeat > currentHeatDemand)
                 {
-                    double newPercentage = currentHeatDemand / cheapestUnit.MaxHeat;
-                    resultData = ChangeOperationalPercentage(resultData, newPercentage, roundToDigits);
-                    currentHeatDemand = Math.Round(currentHeatDemand - cheapestUnit.MaxHeat * newPercentage, 2);
+                    newPercentage = currentHeatDemand / cheapestUnit.MaxHeat;
+                    resultData = ChangeOperationalPercentage(resultData, newPercentage);
                 }
-                else
-                    currentHeatDemand = Math.Round(currentHeatDemand - cheapestUnit.MaxHeat, 2);
+
+                // [Dan] Math.Round seems to be necessary here, otherwise the optimizer sees an insignificantly small bit of heat demand left
+                // and attempts to fill it with remaining units with an insignificantly small operation percentage.
+                currentHeatDemand = Math.Round(currentHeatDemand - cheapestUnit.MaxHeat * newPercentage, 15);
                 
                 resultDatas.Add(resultData);
             }
             return resultDatas;
         }
         
-        public List<ResultData> OptimizeData(List<ProductionUnit> productionUnits, List<SourceData> sourceData, int roundToDigits = 2)
+        public List<ResultData> OptimizeData(List<ProductionUnit> productionUnits, List<SourceData> sourceData)
         {
             List<ResultData> resultDatas = [];
             foreach (SourceData sourceDataPoint in sourceData)
             {
-                List<ResultData> intervalResultDatas = CalculateResultDataForInterval(productionUnits, sourceDataPoint, roundToDigits);
+                List<ResultData> intervalResultDatas = CalculateResultDataForInterval(productionUnits, sourceDataPoint);
                 resultDatas.AddRange(intervalResultDatas);
             }
             return resultDatas;
