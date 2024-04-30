@@ -1,78 +1,75 @@
 ﻿using CsvHelper;
-using System.Data;
-using System.Timers;
 using System.Text.Json;
 
 namespace HeatItOn
 {
     public struct SourceData
     {
-        //public DateTime CurrentTime { get; set; }
-        //public double TimeSinceLastUpdate { get; set; }
-
         public DateTime TimeFrom { get; set; }
         public DateTime TimeTo { get; set; }
         public double HeatDemand { get; set; }
         public double ElectricityPrice { get; set; }
     }
-
-    public class APIRecord
+    
+    public class SourceDataManager : ISourceDataManager
     {
-        public DateTime HourDK { get; set; }
-        public double SpotPriceDKK { get; set; }
-    }
-    public class APIRecords
-    {
-        public List<APIRecord>? records { get; set; } // FIXME: if this variable name is Capitalized, this no longer works for some reason?
-    }
-    public class SourceDataManager
-    {
-        static readonly HttpClient client = new();
-        public static async Task<List<SourceData>> GetEnerginetElectricityPrices()
+        public struct HourlyElectricityPrice
         {
-            Random random = new();
-            List<SourceData> sourceData = [];
-            // dataset=Elspotprices; start=now-P6D; columns=HourDK,SpotPriceDKK; filter={PriceArea=["DK1"]}; sort=HourDK; limit=0
-            string url = "https://api.energidataservice.dk/dataset/Elspotprices?start=now-P6D&columns=HourDK%2CSpotPriceDKK&filter=%7B%22PriceArea%22%3A%5B%22DK1%22%5D%7D&sort=HourDK&limit=0";
+            public DateTime HourDK { get; set; }
+            public double SpotPriceDKK { get; set; }
+        }
+        public struct ElectricityPrices
+        {
+            public List<HourlyElectricityPrice>? records { get; set; }
+        }
+        public async Task<byte[]?> GetEnerginetAPIData(string url)
+        {
+            HttpClient client = new();
             HttpResponseMessage response = await client.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsByteArrayAsync();
-                APIRecords recordList = JsonSerializer.Deserialize<APIRecords>(content)!;
-                if (recordList.records == null)
-                    return sourceData;
-                foreach (APIRecord record in recordList.records)
-                {
-                    SourceData sourceDataPoint = new()
-                    {
-                        TimeFrom = record.HourDK,
-                        TimeTo = record.HourDK.AddHours(1),
-                        HeatDemand = random.NextDouble() * 10, // randomized from 0 to 10.0 since we can't pull heat demand data from APIs at the moment
-                        ElectricityPrice = record.SpotPriceDKK
-                    };
-                    sourceData.Add(sourceDataPoint);
-                }
+                return content;
             }
+
+            return null;
+        }
+
+        private static double GetEnerginetHeatDemand()
+        {
+            Random random = new();
+            return random.NextDouble() * 10; // randomized from 0 to 10.0 since we can't pull heat demand data from APIs at the moment
+        }
+        public async Task<List<SourceData>> ReadEnerginetAPISourceData()
+        {
+            List<SourceData> sourceData = [];
+
+            // Getting electricity prices
+            // dataset=Elspotprices; start=now-P6D; columns=HourDK,SpotPriceDKK; filter={PriceArea=["DK1"]}; sort=HourDK; limit=0
+            string url = "https://api.energidataservice.dk/dataset/Elspotprices?start=now-P6D&columns=HourDK%2CSpotPriceDKK&filter=%7B%22PriceArea%22%3A%5B%22DK1%22%5D%7D&sort=HourDK&limit=0";
+
+            var electricityPrices = await GetEnerginetAPIData(url);
+            if (electricityPrices == null)
+                return sourceData;
+            
+            ElectricityPrices priceList = JsonSerializer.Deserialize<ElectricityPrices>(electricityPrices)!;
+            if (priceList.records == null)
+                return sourceData;
+            
+            foreach (HourlyElectricityPrice price in priceList.records)
+            {
+                SourceData sourceDataPoint = new()
+                {
+                    TimeFrom = price.HourDK,
+                    TimeTo = price.HourDK.AddHours(1),
+                    HeatDemand = GetEnerginetHeatDemand(),
+                    ElectricityPrice = price.SpotPriceDKK
+                };
+                sourceData.Add(sourceDataPoint);
+            }
+            
             return sourceData;
         }
-
-        private string fileName;
-
-        public string FileName
-        {
-            get { return fileName; }
-            set { fileName = value; }
-        }
-
-        private SourceData CurrentSourceData;
-        private System.Timers.Timer SaveTimer;
-
-        public SourceDataManager(string FileName, float SaveInterval)
-        {
-            this.FileName = FileName;
-            //SetTimer(SaveInterval);
-        }
-
         public List<SourceData> ReadSourceData(string fileName)
         {
             try
@@ -88,48 +85,11 @@ namespace HeatItOn
             }
         }
 
-        public void UpdateSourceData( SourceData Data) 
+        public void WriteSourceData(List<SourceData> sourceData, string fileName)
         {
-            CurrentSourceData = Data;
-        }
-
-        private void SetTimer(float SaveInterval)
-        {
-            // Create a timer with a two second interval.
-            SaveTimer = new System.Timers.Timer(SaveInterval);
-            // Hook up the Elapsed event for the timer. 
-            SaveTimer.Elapsed += OnTimedEvent;
-            SaveTimer.AutoReset = true;
-            SaveTimer.Enabled = true;
-        }
-
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-            if (!File.Exists(FileName))
-            {
-                using (var writer = new StreamWriter(FileName))
-                using (var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
-                {
-                    csv.WriteRecord(CurrentSourceData);
-                }
-            }
-            else
-            {
-                IEnumerable<SourceData> CSVRecords = new List<SourceData>();
-
-                using (var reader = new StreamReader(FileName))
-                using (var csv = new CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture))
-                {
-                    CSVRecords = csv.GetRecords<SourceData>();
-                }
-
-                using (var writer = new StreamWriter(FileName))
-                using (var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
-                {
-                    csv.WriteRecords(CSVRecords);
-                    csv.WriteRecord(CurrentSourceData);
-                }
-            }
+            using var writer = new StreamWriter("SourceData\\" + fileName + ".csv");
+            using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
+            csv.WriteRecords(sourceData);
         }
     }
 }
