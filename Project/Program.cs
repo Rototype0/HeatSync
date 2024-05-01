@@ -1,4 +1,6 @@
-﻿using Raylib_cs;
+﻿using System.Collections.Generic;
+using Raylib_cs;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HeatItOn
 {
@@ -9,22 +11,14 @@ namespace HeatItOn
             JsonAssetManager jsonAssetManager = new();
             SourceDataManager sourceDataManager = new();
             ResultDataManager resultDataManager = new();
-            Window MainWindow = new Window();
             Optimizer optimizer = new();
-            
+
             List<SourceData> data = sourceDataManager.ReadEnerginetAPISourceData().Result;
-            
-            /*
-            foreach (SourceData dataPoint in data)
-            {
-                Console.WriteLine(dataPoint.TimeFrom);
-                Console.WriteLine(dataPoint.TimeTo);
-                Console.WriteLine(dataPoint.HeatDemand);
-                Console.WriteLine(dataPoint.ElectricityPrice);
-            }
-            */
+            //List<SourceData> data = sourceDataManager.ReadSourceData("summertest");
             List<ProductionUnit> productionUnits = jsonAssetManager.GetAllProductionUnits();
             List<ResultData> writeRecords = optimizer.OptimizeData(productionUnits, data);
+
+            Window MainWindow = new Window(1280, 720, data, productionUnits, writeRecords);
 
             string fileName = "ResultDataTest";
             resultDataManager.WriteResultData(writeRecords, fileName);
@@ -33,6 +27,8 @@ namespace HeatItOn
             {
                 MainWindow.Render();
             }
+
+            MainWindow.controller.Shutdown();
         }
     }
 }
