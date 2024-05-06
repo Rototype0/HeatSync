@@ -10,7 +10,7 @@ namespace HeatItOn.Tests
             SourceDataManager SDM = new();
 
             // Act
-            var content = SDM.GetEnerginetAPIData(url); // also checks if returns success code (200-299)
+            var content = SDM.ReadAPISourceData(url); // also checks if returns success code (200-299)
 
             // Assert
             Assert.NotNull(content);

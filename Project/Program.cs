@@ -8,8 +8,8 @@
             SourceDataManager sourceDataManager = new();
             ResultDataManager resultDataManager = new();
             Optimizer optimizer = new();
-            
-            List<SourceData> data = sourceDataManager.ReadEnerginetAPISourceData().Result;
+
+            List<SourceData> data = sourceDataManager.ReadAPISourceData().Result;
 
             // string sourceDataPath = "wintertest"; // can be "summertest" or "wintertest"
             // List<SourceData> data = sourceDataManager.ReadSourceData(sourceDataPath);

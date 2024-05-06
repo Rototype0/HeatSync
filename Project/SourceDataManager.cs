@@ -13,16 +13,16 @@ namespace HeatItOn
     
     public class SourceDataManager : ISourceDataManager
     {
-        public struct HourlyElectricityPrice
+        public struct ElectricityPrices
         {
             public DateTime HourDK { get; set; }
             public double SpotPriceDKK { get; set; }
         }
-        public struct ElectricityPrices
+        public struct EnerginetAPIRecords
         {
-            public List<HourlyElectricityPrice>? records { get; set; }
+            public List<ElectricityPrices>? records { get; set; }
         }
-        public async Task<byte[]?> GetEnerginetAPIData(string url)
+        private static async Task<byte[]?> GetEnerginetAPIData(string url)
         {
             HttpClient client = new();
             HttpResponseMessage response = await client.GetAsync(url);
@@ -35,39 +35,56 @@ namespace HeatItOn
             return null;
         }
 
-        private static double GetEnerginetHeatDemand()
+        // Gets electricity prices from energinet.dk API and returns List<ElectricityPrices>.
+        // Default URL is equivalent to:
+        // dataset=Elspotprices; start=now-P6D; columns=HourDK,SpotPriceDKK; filter={PriceArea=["DK1"]}; sort=HourDK; limit=0
+        private static async Task<List<ElectricityPrices>> GetEnerginetElectricityPrices(string url)
         {
-            Random random = new();
-            return random.NextDouble() * 10; // randomized from 0 to 10.0 since we can't pull heat demand data from APIs at the moment
+            var content = await GetEnerginetAPIData(url);
+            if (content == null)
+                return [];
+
+            EnerginetAPIRecords priceList = JsonSerializer.Deserialize<EnerginetAPIRecords>(content)!;
+            if (priceList.records == null)
+                return [];
+            
+            return priceList.records;
         }
-        public async Task<List<SourceData>> ReadEnerginetAPISourceData()
+
+        // Pseudorandom number generator for getting a list of bounded heat demand values (since we can't pull heat demand data from APIs at the moment)
+        // This needs to be pseudorandom (instead of truly random) in order to be usable in tests.
+        public static List<double> GenerateHeatDemands(int count, int seed = 0)
+        {
+            List<double> heatDemands = [];
+            Random random = new(seed);
+
+            for (int i = 0; i < count; i++)
+            {
+                heatDemands.Add(random.NextDouble() * 10); // randomized from 0 to 10.0
+            }
+
+            return heatDemands;
+        }
+
+        public async Task<List<SourceData>> ReadAPISourceData(
+            string url = "https://api.energidataservice.dk/dataset/Elspotprices?start=now-P6D&columns=HourDK%2CSpotPriceDKK&filter=%7B%22PriceArea%22%3A%5B%22DK1%22%5D%7D&sort=HourDK&limit=0"
+        )
         {
             List<SourceData> sourceData = [];
+            List<ElectricityPrices> priceList = await GetEnerginetElectricityPrices(url);
+            List<double> heatDemands = GenerateHeatDemands(priceList.Count);
 
-            // Getting electricity prices
-            // dataset=Elspotprices; start=now-P6D; columns=HourDK,SpotPriceDKK; filter={PriceArea=["DK1"]}; sort=HourDK; limit=0
-            string url = "https://api.energidataservice.dk/dataset/Elspotprices?start=now-P6D&columns=HourDK%2CSpotPriceDKK&filter=%7B%22PriceArea%22%3A%5B%22DK1%22%5D%7D&sort=HourDK&limit=0";
-
-            var electricityPrices = await GetEnerginetAPIData(url);
-            if (electricityPrices == null)
-                return sourceData;
-            
-            ElectricityPrices priceList = JsonSerializer.Deserialize<ElectricityPrices>(electricityPrices)!;
-            if (priceList.records == null)
-                return sourceData;
-            
-            foreach (HourlyElectricityPrice price in priceList.records)
+            for (int i = 0; i < priceList.Count; i++)
             {
                 SourceData sourceDataPoint = new()
                 {
-                    TimeFrom = price.HourDK,
-                    TimeTo = price.HourDK.AddHours(1),
-                    HeatDemand = GetEnerginetHeatDemand(),
-                    ElectricityPrice = price.SpotPriceDKK
+                    TimeFrom = priceList[i].HourDK,
+                    TimeTo = priceList[i].HourDK.AddHours(1),
+                    HeatDemand = heatDemands[i],
+                    ElectricityPrice = priceList[i].SpotPriceDKK
                 };
                 sourceData.Add(sourceDataPoint);
             }
-            
             return sourceData;
         }
         public List<SourceData> ReadSourceData(string fileName)
