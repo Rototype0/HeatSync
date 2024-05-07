@@ -1,4 +1,4 @@
-namespace HeatItOn
+namespace HeatSync
 {
     public interface IResultDataManager
     {

@@ -1,6 +1,6 @@
 using CsvHelper;
 
-namespace HeatItOn
+namespace HeatSync
 {
     public struct ResultData
     {

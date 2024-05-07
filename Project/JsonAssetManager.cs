@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace HeatItOn
+namespace HeatSync
 {
     public class JsonAssetManager : IAssetManager
     {

@@ -1,4 +1,4 @@
-namespace HeatItOn.Tests
+namespace HeatSync.Tests
 {
     public class ResultDataManagerTests
     {

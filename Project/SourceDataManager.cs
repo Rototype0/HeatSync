@@ -1,7 +1,7 @@
 ﻿using CsvHelper;
 using System.Text.Json;
 
-namespace HeatItOn
+namespace HeatSync
 {
     public struct SourceData
     {
