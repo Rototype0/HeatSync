@@ -2,9 +2,9 @@
 using System.Numerics;
 using Raylib_cs;
 
-namespace HeatItOn
+namespace HeatSync
 {
-    internal class Window
+    internal class DataVisualizer : IDataVisualizer
     {
         private bool isImGUIWindowOpen;
 
@@ -29,7 +29,7 @@ namespace HeatItOn
         private ImGuiWindowFlags ImGuiWindowFlags;
         private ConfigFlags RaylibWindowFlags;
 
-        internal Window(int WindowWidth, int WindowHeight, List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
+        internal DataVisualizer(int WindowWidth, int WindowHeight, List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
         {
             isImGUIWindowOpen = true;
             ImGuiWindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBringToFrontOnFocus;
@@ -44,10 +44,10 @@ namespace HeatItOn
 
             controller = new ImGuiController();
 
-            Init(WindowWidth, WindowHeight, Data, ProductionUnits, WriteRecords);
+            UpdateData(WindowWidth, WindowHeight, Data, ProductionUnits, WriteRecords);
         }
 
-        internal void Init(int WindowWidth, int WindowHeight, List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
+        public void UpdateData(int WindowWidth, int WindowHeight, List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
         {
             this.ProductionUnits = ProductionUnits.ToArray();
 
@@ -154,7 +154,7 @@ namespace HeatItOn
             return SeperatedListByProductionUnit;
         }
 
-        internal void Render()  
+        public void Render()
         {
             controller.NewFrame();
             controller.ProcessEvent();

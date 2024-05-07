@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Raylib_cs;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -18,7 +18,7 @@ namespace HeatSync
             List<ProductionUnit> productionUnits = jsonAssetManager.GetAllProductionUnits();
             List<ResultData> writeRecords = optimizer.OptimizeData(productionUnits, data);
 
-            Window MainWindow = new Window(1280, 720, data, productionUnits, writeRecords);
+            DataVisualizer MainWindow = new DataVisualizer(1280, 720, data, productionUnits, writeRecords);
 
             string fileName = "ResultDataTest";
             resultDataManager.WriteResultData(writeRecords, fileName);
