@@ -1,0 +1,6 @@
+<heatington>
+	<city>Heatington</city>
+	<imagePath>StaticAssets\\HeatingGrids\\heatington.jpg</imagePath>
+	<architecture>single district heating network</architecture>
+	<size>1600 buildings</size>
+</heatington>
