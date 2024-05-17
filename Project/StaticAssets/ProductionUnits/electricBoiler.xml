@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+ <ProductionUnit>
+   <Name>EK</Name>
+   <ImagePath>StaticAssets\ProductionUnits\electricBoiler.jpg</ImagePath>
+   <MaxHeat>8.0</MaxHeat>
+   <MaxElectricity>-8.0</MaxElectricity>
+   <ProductionCosts>50</ProductionCosts>
+   <CO2Emissions>0</CO2Emissions>
+   <GasConsumption>0</GasConsumption>
+ </ProductionUnit>

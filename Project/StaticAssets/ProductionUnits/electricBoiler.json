@@ -1,6 +1,6 @@
 {
     "Name": "EK",
-    "ImagePath": "StaticAssets\\ProductionUnit\\electricBoiler.jpg",
+    "ImagePath": "StaticAssets\\ProductionUnits\\electricBoiler.jpg",
     "MaxHeat": 8.0,
     "MaxElectricity": -8.0,
     "ProductionCosts": 50,

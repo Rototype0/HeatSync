@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+ <ProductionUnit>
+   <Name>OB</Name>
+   <ImagePath>StaticAssets\ProductionUnits\oilBoiler.jpg</ImagePath>
+   <MaxHeat>4.0</MaxHeat>
+   <MaxElectricity>0.0</MaxElectricity>
+   <ProductionCosts>700</ProductionCosts>
+   <CO2Emissions>262</CO2Emissions>
+   <GasConsumption>1.2</GasConsumption>
+ </ProductionUnit>
