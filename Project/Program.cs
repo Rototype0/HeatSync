@@ -14,11 +14,11 @@ namespace HeatSync
             Optimizer optimizer = new();
           
             List<SourceData> data = sourceDataManager.ReadAPISourceData().Result;
-            //List<SourceData> data = sourceDataManager.ReadSourceData("summertest");
+            List<SourceData> initial = sourceDataManager.ReadSourceData("summertest");
             List<ProductionUnit> productionUnits = jsonAssetManager.GetAllProductionUnits();
             List<ResultData> writeRecords = optimizer.OptimizeData(productionUnits, data);
 
-            DataVisualizer MainWindow = new DataVisualizer(1280, 720, data, productionUnits, writeRecords);
+            DataVisualizer MainWindow = new DataVisualizer(1280, 720, initial, productionUnits, writeRecords);
 
             string fileName = "ResultDataTest";
             resultDataManager.WriteResultData(writeRecords, fileName);
@@ -26,6 +26,11 @@ namespace HeatSync
             while(!Raylib.WindowShouldClose() && MainWindow.IsImGUIWindowOpen)
             {
                 MainWindow.Render();
+                if(MainWindow.UpdateDataFlag)
+                {
+                    MainWindow.UpdateData(data, productionUnits, writeRecords);
+                    MainWindow.UpdateDataFlag = false;
+                }
             }
 
             MainWindow.controller.Shutdown();

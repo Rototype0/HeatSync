@@ -1,11 +1,13 @@
 ﻿using ImGuiNET;
 using System.Numerics;
 using Raylib_cs;
+using System.Reflection.Emit;
 
 namespace HeatSync
 {
     internal class DataVisualizer : IDataVisualizer
     {
+        public bool UpdateDataFlag;
         private bool isImGUIWindowOpen;
 
         internal bool IsImGUIWindowOpen
@@ -39,6 +41,7 @@ namespace HeatSync
 
         internal DataVisualizer(int WindowWidth, int WindowHeight, List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
         {
+            UpdateDataFlag = false;
             isImGUIWindowOpen = true;
             ImGuiWindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBringToFrontOnFocus;
             RaylibWindowFlags = ConfigFlags.VSyncHint | ConfigFlags.UndecoratedWindow;
@@ -50,13 +53,15 @@ namespace HeatSync
             var context = ImGui.CreateContext();
             ImGui.SetCurrentContext(context);
 
+            
+
             controller = new ImGuiController();
             AssetManager = new JsonAssetManager();
 
-            UpdateData(WindowWidth, WindowHeight, Data, ProductionUnits, WriteRecords);
+            UpdateData(Data, ProductionUnits, WriteRecords);
         }
 
-        public void UpdateData(int WindowWidth, int WindowHeight, List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
+        public void UpdateData(List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
         {
             this.ProductionUnits = ProductionUnits.ToArray();
 
@@ -180,9 +185,11 @@ namespace HeatSync
             
             ImGui.NewFrame();
             ImGui.SetNextWindowPos(new Vector2(0, 0));
+            ImGui.SetNextWindowSize(new Vector2(Raylib.GetRenderWidth(), Raylib.GetRenderHeight()));
 
-            ImGui.Begin("Test", ref isImGUIWindowOpen, ImGuiWindowFlags);
+            ImGui.Begin("HeatSync", ref isImGUIWindowOpen, ImGuiWindowFlags);
 
+            
             Raylib.SetWindowSize((int)ImGui.GetWindowSize().X, (int)ImGui.GetWindowSize().Y);
 
             InputHandling();
@@ -197,7 +204,10 @@ namespace HeatSync
             {
                 RenderPlotLines(HeatDemand, "Heat Demand");
                 RenderPlotLines(ElectricityPrices, "Electricity Prices");
-                ImGui.Button("Update and optimize data", new Vector2(ImGui.CalcTextSize("Update and optimize data").X + 32, ImGui.CalcTextSize("Update and optimize data").Y + 8));
+                if(ImGui.Button("Update and optimize data", new Vector2(ImGui.CalcTextSize("Update and optimize data").X + 32, ImGui.CalcTextSize("Update and optimize data").Y + 8)))
+                {
+                    UpdateDataFlag = true;
+                }
 
 
                 ImGui.EndTabItem();
@@ -223,6 +233,7 @@ namespace HeatSync
                         RenderPlotLines(SeperateHeatDemand[i], "Heat Production");
                         RenderTable(SeperateGasConsumption[i], "Fuel Consumption", 3);
                         RenderTable(SeperateCO2Emissions[i], "CO2 Emissions", 3);
+                        DrawTexture(ProductionUnitsTextures[i]);
 
                         ImGui.EndTabItem();
                     }
@@ -255,17 +266,17 @@ namespace HeatSync
                         ImGui.LabelText(ProductionUnits[i].CO2Emissions.ToString(), "Max CO2 production:");
                         ImGui.LabelText(ProductionUnits[i].GasConsumption.ToString(), "Max fuel consumption:");
 
-
                         ImGui.EndTabItem();
                     }
                 }
 
                 if(ImGui.BeginTabItem("Heating Grid"))
                 {
-                    DrawTexture(HeatingGridTexture);
                     ImGui.LabelText(HeatingGridData.City, "Heating grid name:");
                     ImGui.LabelText(HeatingGridData.Size, "Heating grid size:");
                     ImGui.LabelText(HeatingGridData.Architecture, "Heating grid architecture:");
+                    DrawTexture(HeatingGridTexture);
+
                     ImGui.EndTabItem();
                 }
 
@@ -279,12 +290,10 @@ namespace HeatSync
             
 
             Raylib.BeginDrawing();
-            Raylib.ClearBackground(Color.White);
+            Raylib.ClearBackground(Color.Blank);
 
             ImGui.Render();
             controller.Render(ImGui.GetDrawData());
-
-            //DrawTexture(HeatingGridTexture,100,0);
 
             Raylib.EndDrawing();
 
@@ -347,7 +356,10 @@ namespace HeatSync
 
         private void DrawTexture(Texture2D Texture)
         {
-            ImGui.Image((nint)Texture.Id, new Vector2(Texture.Width, Texture.Height));
+            if(ImGui.CollapsingHeader("Image", ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.Leaf))
+            {
+                ImGui.Image((nint)Texture.Id, new Vector2(Texture.Width, Texture.Height));
+            }
         }
     }
 }
