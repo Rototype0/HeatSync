@@ -1,6 +1,6 @@
 {
     "Name": "GB",
-    "ImagePath": "StaticAssets\\ProductionUnits\\gasBoiler.jpg",
+    "ImagePath": "StaticAssets\\ProductionUnits\\gasBoiler.png",
     "MaxHeat": 5.0,
     "MaxElectricity": 0.0,
     "ProductionCosts": 500,

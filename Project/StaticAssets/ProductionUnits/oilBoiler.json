@@ -1,6 +1,6 @@
 {
     "Name": "OB",
-    "ImagePath": "StaticAssets\\ProductionUnits\\oilBoiler.jpg",
+    "ImagePath": "StaticAssets\\ProductionUnits\\oilBoiler.png",
     "MaxHeat": 4.0,
     "MaxElectricity": 0,
     "ProductionCosts": 700,
