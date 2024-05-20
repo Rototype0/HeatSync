@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
  <ProductionUnit>
    <Name>GM</Name>
-   <ImagePath>StaticAssets\ProductionUnits\gasMotor.jpg</ImagePath>
+   <ImagePath>StaticAssets\ProductionUnits\gasMotor.png</ImagePath>
    <MaxHeat>3.6</MaxHeat>
    <MaxElectricity>2.7</MaxElectricity>
    <ProductionCosts>1100</ProductionCosts>

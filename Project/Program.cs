@@ -6,8 +6,8 @@ namespace HeatSync
     {
         private static void Main()
         {
-            //JsonAssetManager assetManager = new();
-            XmlAssetManager assetManager = new();
+            JsonAssetManager assetManager = new();
+            //XmlAssetManager assetManager = new();
 
             SourceDataManager sourceDataManager = new();
             ResultDataManager resultDataManager = new();
@@ -16,11 +16,14 @@ namespace HeatSync
             
             List<SourceData> data = sourceDataManager.ReadAPISourceData().Result;
             List<SourceData> initialData = sourceDataManager.ReadSourceData("summertest");
-            List<ProductionUnit> productionUnits = jsonAssetManager.GetAllProductionUnits();
+
+            HeatingGrid gridData = assetManager.LoadHeatingGridData(File.ReadAllText("StaticAssets\\HeatingGrids\\heatington.json"));
+
+            List<ProductionUnit> productionUnits = assetManager.GetAllProductionUnits();
 
             List<ResultData> writeRecords = optimizer.OptimizeData(productionUnits, data);
 
-            DataVisualizer MainWindow = new DataVisualizer(1280, 720, initialData, productionUnits, writeRecords);
+            DataVisualizer MainWindow = new DataVisualizer(1280, 720, initialData, gridData, productionUnits, writeRecords);
 
             string fileName = "ResultData";
             resultDataManager.WriteResultData(writeRecords, fileName);
@@ -30,7 +33,7 @@ namespace HeatSync
                 MainWindow.Render();
                 if(MainWindow.UpdateDataFlag)
                 {
-                    MainWindow.UpdateData(data, productionUnits, writeRecords);
+                    MainWindow.UpdateData(data, gridData, productionUnits, writeRecords);
                     MainWindow.UpdateDataFlag = false;
                 }
             }

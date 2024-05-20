@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
  <ProductionUnit>
    <Name>GB</Name>
-   <ImagePath>StaticAssets\ProductionUnits\gasBoiler.jpg</ImagePath>
+   <ImagePath>StaticAssets\ProductionUnits\gasBoiler.png</ImagePath>
    <MaxHeat>5.0</MaxHeat>
    <MaxElectricity>0.0</MaxElectricity>
    <ProductionCosts>500</ProductionCosts>

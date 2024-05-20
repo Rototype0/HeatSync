@@ -25,11 +25,10 @@ namespace HeatSync
         private ImGuiWindowFlags ImGuiWindowFlags;
         private ConfigFlags RaylibWindowFlags;
         private int FontScale = 1;
-        private JsonAssetManager AssetManager;
         private HeatingGrid HeatingGridData;
         private Texture2D HeatingGridTexture;
         private List<Texture2D> ProductionUnitsTextures = [];
-        internal DataVisualizer(int WindowWidth, int WindowHeight, List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
+        internal DataVisualizer(int WindowWidth, int WindowHeight, List<SourceData> Data, HeatingGrid GridData, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
         {
             UpdateDataFlag = false;
             isImGUIWindowOpen = true;
@@ -44,12 +43,11 @@ namespace HeatSync
             ImGui.SetCurrentContext(context);
 
             controller = new ImGuiController();
-            AssetManager = new JsonAssetManager();
-
-            UpdateData(Data, ProductionUnits, WriteRecords);
+            
+            UpdateData(Data, GridData, ProductionUnits, WriteRecords);
         }
 
-        public void UpdateData(List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
+        public void UpdateData(List<SourceData> Data, HeatingGrid GridData, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
         {
             this.ProductionUnits = ProductionUnits.ToArray();
 
@@ -88,7 +86,7 @@ namespace HeatSync
                 ElectricityPrices[i] = (float)Data[i].ElectricityPrice;
             }
 
-            HeatingGridData = AssetManager.LoadHeatingGridData(File.ReadAllText("StaticAssets\\HeatingGrids\\heatington.json"));
+            HeatingGridData = GridData;
             ProductionUnitsTextures = [];
 
             HeatingGridTexture = LoadImage(HeatingGridData.ImagePath);

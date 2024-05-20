@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
  <HeatingGrid>
    <Name>EK</Name>
-   <ImagePath>StaticAssets\HeatingGrids\heatington.jpg</ImagePath>
+   <ImagePath>StaticAssets\HeatingGrids\heatington.png</ImagePath>
    <Architecture>single district heating network</Architecture>
    <Size>1600 buildings</Size>
  </HeatingGrid>
