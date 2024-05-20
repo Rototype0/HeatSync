@@ -21,6 +21,7 @@ namespace HeatSync
         private float[] CollectiveCO2Emissions;
         private float[] CollectiveProductionCosts;
 
+
         private List<float[]> SeperateCO2Emissions;
         private List<float[]> SeperateHeatDemand;
         private List<float[]> SeperateGasConsumption;
@@ -28,6 +29,8 @@ namespace HeatSync
         internal ImGuiController controller;
         private ImGuiWindowFlags ImGuiWindowFlags;
         private ConfigFlags RaylibWindowFlags;
+
+        private int FontScale = 1;
 
         internal DataVisualizer(int WindowWidth, int WindowHeight, List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
         {
@@ -104,6 +107,7 @@ namespace HeatSync
                 }
                 CurrentBoilerStack.Add(SamplePoint);
             }
+            
             foreach (List<ResultData> BoilerStack in SeperatedList)
             {
                 List<ResultData> FilledBoilerStack = BoilerStack;
@@ -167,35 +171,83 @@ namespace HeatSync
             Raylib.SetWindowSize((int)ImGui.GetWindowSize().X, (int)ImGui.GetWindowSize().Y);
 
             InputHandling();
+            /*
             ImGui.LabelText(ResultDataListByProductionUnit[0][0].TimeFrom.ToString(),
     ResultDataListByProductionUnit[ResultDataListByProductionUnit.Count - 1][ResultDataListByProductionUnit[ResultDataListByProductionUnit.Count - 1].Count - 1].TimeTo.ToString());
-
-            ImGui.BeginTabBar("Settings#left_tabs_bar");
-            if (ImGui.BeginTabItem("General Information"))
+            */
+            ImGui.BeginTabBar("Main");
+            if(ImGui.BeginTabItem("Source Data"))
             {
                 RenderPlotLines(HeatDemand, "Heat Demand");
-                RenderPlotHistogram(CollectiveCO2Emissions, "Collective CO2 Emissions");
-                RenderTable(CollectiveProductionCosts, "Fuel expences");
                 RenderPlotLines(ElectricityPrices, "Electricity Prices");
+                ImGui.Button("Update and optimize data", new Vector2(ImGui.CalcTextSize("Update and optimize data").X + 32, ImGui.CalcTextSize("Update and optimize data").Y + 8));
 
 
                 ImGui.EndTabItem();
             }
 
-            for (int i = 0; i < ProductionUnits.Length; i++)
+            if(ImGui.BeginTabItem("Result Data"))
             {
-                if (ImGui.BeginTabItem(ResultDataListByProductionUnit[i][0].ProductionUnitName))
+                ImGui.BeginTabBar("Settings#left_tabs_bar");
+                if (ImGui.BeginTabItem("General Information"))
                 {
-                    RenderPlotLines(SeperateHeatDemand[i], "Heat Production");
-                    RenderTable(SeperateGasConsumption[i], "Fuel Consumption");
-                    RenderTable(SeperateCO2Emissions[i], "CO2 Emissions");
+                    RenderPlotLines(HeatDemand, "Heat Production");
+                    RenderPlotHistogram(CollectiveCO2Emissions, "Collective CO2 Emissions");
+                    RenderTable(CollectiveProductionCosts, "Fuel expences", 3);
+
 
                     ImGui.EndTabItem();
                 }
+
+                for (int i = 0; i < ProductionUnits.Length; i++)
+                {
+                    if (ImGui.BeginTabItem(ResultDataListByProductionUnit[i][0].ProductionUnitName))
+                    {
+                        RenderPlotLines(SeperateHeatDemand[i], "Heat Production");
+                        RenderTable(SeperateGasConsumption[i], "Fuel Consumption", 3);
+                        RenderTable(SeperateCO2Emissions[i], "CO2 Emissions", 3);
+
+                        ImGui.EndTabItem();
+                    }
+                }
+
+                ImGui.EndTabBar();
+                ImGui.EndTabItem();
             }
 
-            ImGui.EndTabBar();
+            if(ImGui.BeginTabItem("Settings"))
+            {
+                ImGui.BeginTabBar("Production Units");
 
+                if(ImGui.BeginTabItem("Visualizer settings"))
+                {
+                    ImGui.SliderInt("Font scale:", ref FontScale, 1, 5);
+                    ImGui.SetWindowFontScale(FontScale);
+                    ImGui.EndTabItem();
+                }
+
+                for (int i = 0; i < ProductionUnits.Length; i++)
+                {
+                    if (ImGui.BeginTabItem(ProductionUnits[i].Name))
+                    {
+                        ImGui.LabelText(ProductionUnits[i].Name, "Production unit name:");
+                        ImGui.LabelText(ProductionUnits[i].MaxHeat.ToString(), "Max heat production:");
+                        ImGui.LabelText(ProductionUnits[i].MaxElectricity.ToString(), "Max electricity consumption/production:");
+                        ImGui.LabelText(ProductionUnits[i].ProductionCosts.ToString(), "Max production cost:");
+                        ImGui.LabelText(ProductionUnits[i].CO2Emissions.ToString(), "Max CO2 production:");
+                        ImGui.LabelText(ProductionUnits[i].GasConsumption.ToString(), "Max fuel consumption:");
+
+
+                        ImGui.EndTabItem();
+                    }
+                }
+
+                ImGui.EndTabBar();
+                ImGui.EndTabItem();
+            }
+
+
+            ImGui.EndTabBar();
             ImGui.End();
 
             Raylib.BeginDrawing();
@@ -207,11 +259,11 @@ namespace HeatSync
 
         }
 
-        private void RenderTable(float[] samples, string Label)
+        private void RenderTable(float[] samples, string Label, int Width)
         {
             if(ImGui.CollapsingHeader(Label))
             {
-                if (ImGui.BeginTable(Label, 3, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, new Vector2(ImGui.GetWindowSize().X - 16, 200)))
+                if (ImGui.BeginTable(Label, Width, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, new Vector2(ImGui.GetWindowSize().X - 16, 200)))
                 {
                     ImGui.TableSetupColumn(Label); ImGui.TableSetupColumn("From"); ImGui.TableSetupColumn("To");
                     ImGui.TableHeadersRow();
