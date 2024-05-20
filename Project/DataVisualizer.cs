@@ -32,6 +32,11 @@ namespace HeatSync
 
         private int FontScale = 1;
 
+        private JsonAssetManager AssetManager;
+        private HeatingGrid HeatingGridData;
+        private Texture2D HeatingGridTexture;
+        private List<Texture2D> ProductionUnitsTextures;
+
         internal DataVisualizer(int WindowWidth, int WindowHeight, List<SourceData> Data, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
         {
             isImGUIWindowOpen = true;
@@ -46,6 +51,7 @@ namespace HeatSync
             ImGui.SetCurrentContext(context);
 
             controller = new ImGuiController();
+            AssetManager = new JsonAssetManager();
 
             UpdateData(WindowWidth, WindowHeight, Data, ProductionUnits, WriteRecords);
         }
@@ -87,6 +93,15 @@ namespace HeatSync
             {
                 HeatDemand[i] = (float)Data[i].HeatDemand;
                 ElectricityPrices[i] = (float)Data[i].ElectricityPrice;
+            }
+
+            HeatingGridData = AssetManager.LoadHeatingGridData(File.ReadAllText("StaticAssets\\HeatingGrids\\heatington.json"));
+            ProductionUnitsTextures = new List<Texture2D>();
+
+            HeatingGridTexture = LoadImage(HeatingGridData.ImagePath);
+            for (int i = 0; i < ProductionUnits.Count; i++)
+            {
+                ProductionUnitsTextures.Add(LoadImage(ProductionUnits[i].ImagePath));
             }
         }
 
@@ -162,7 +177,7 @@ namespace HeatSync
         {
             controller.NewFrame();
             controller.ProcessEvent();
-
+            
             ImGui.NewFrame();
             ImGui.SetNextWindowPos(new Vector2(0, 0));
 
@@ -171,10 +186,12 @@ namespace HeatSync
             Raylib.SetWindowSize((int)ImGui.GetWindowSize().X, (int)ImGui.GetWindowSize().Y);
 
             InputHandling();
+            
             /*
             ImGui.LabelText(ResultDataListByProductionUnit[0][0].TimeFrom.ToString(),
     ResultDataListByProductionUnit[ResultDataListByProductionUnit.Count - 1][ResultDataListByProductionUnit[ResultDataListByProductionUnit.Count - 1].Count - 1].TimeTo.ToString());
             */
+            
             ImGui.BeginTabBar("Main");
             if(ImGui.BeginTabItem("Source Data"))
             {
@@ -242,6 +259,15 @@ namespace HeatSync
                     }
                 }
 
+                if(ImGui.BeginTabItem("Heating Grid"))
+                {
+                    
+                    ImGui.LabelText(HeatingGridData.City, "Heating grid name:");
+                    ImGui.LabelText(HeatingGridData.Size, "Heating grid size:");
+                    ImGui.LabelText(HeatingGridData.Architecture, "Heating grid architecture:");
+                    ImGui.EndTabItem();
+                }
+
                 ImGui.EndTabBar();
                 ImGui.EndTabItem();
             }
@@ -249,12 +275,16 @@ namespace HeatSync
 
             ImGui.EndTabBar();
             ImGui.End();
+            
 
             Raylib.BeginDrawing();
-            Raylib.ClearBackground(Color.Blank);
+            Raylib.ClearBackground(Color.White);
 
             ImGui.Render();
             controller.Render(ImGui.GetDrawData());
+
+            //DrawTexture(HeatingGridTexture,100,0);
+
             Raylib.EndDrawing();
 
         }
@@ -300,6 +330,23 @@ namespace HeatSync
                 var CurrentWindowPosition = Raylib.GetWindowPosition();
                 Raylib.SetWindowPosition((int)(CurrentWindowPosition.X + ImGui.GetMouseDragDelta().X), (int)(CurrentWindowPosition.Y + ImGui.GetMouseDragDelta().Y));
             }
+        }
+
+        private Texture2D LoadImage(string FilePath)
+        {
+            Image image = Raylib.LoadImage(FilePath);
+
+            Raylib.ImageDrawPixel(ref image, 0,0, Color.RayWhite);
+            Texture2D texture = Raylib.LoadTextureFromImage(image);
+
+            Raylib.UnloadImage(image);
+
+            return texture;
+        }
+
+        private void DrawTexture(Texture2D Texture, int PosX, int PosY)
+        {
+            Raylib.DrawTexture(Texture, PosX, PosY, Color.White);
         }
     }
 }
