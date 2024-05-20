@@ -6,14 +6,18 @@ namespace HeatSync
     {
         private static void Main()
         {
-            JsonAssetManager jsonAssetManager = new();
+            //JsonAssetManager assetManager = new();
+            XmlAssetManager assetManager = new();
+
             SourceDataManager sourceDataManager = new();
             ResultDataManager resultDataManager = new();
+            
             Optimizer optimizer = new();
-          
+            
             List<SourceData> data = sourceDataManager.ReadAPISourceData().Result;
             List<SourceData> initialData = sourceDataManager.ReadSourceData("summertest");
             List<ProductionUnit> productionUnits = jsonAssetManager.GetAllProductionUnits();
+
             List<ResultData> writeRecords = optimizer.OptimizeData(productionUnits, data);
 
             DataVisualizer MainWindow = new DataVisualizer(1280, 720, initialData, productionUnits, writeRecords);

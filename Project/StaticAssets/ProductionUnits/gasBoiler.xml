@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+ <ProductionUnit>
+   <Name>GB</Name>
+   <ImagePath>StaticAssets\ProductionUnits\gasBoiler.jpg</ImagePath>
+   <MaxHeat>5.0</MaxHeat>
+   <MaxElectricity>0.0</MaxElectricity>
+   <ProductionCosts>500</ProductionCosts>
+   <CO2Emissions>215</CO2Emissions>
+   <GasConsumption>1.1</GasConsumption>
+ </ProductionUnit>
