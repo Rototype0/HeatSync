@@ -247,6 +247,7 @@ namespace HeatSync
                 {
                     if (ImGui.BeginTabItem(ProductionUnits[i].Name))
                     {
+                        DrawTexture(ProductionUnitsTextures[i]);
                         ImGui.LabelText(ProductionUnits[i].Name, "Production unit name:");
                         ImGui.LabelText(ProductionUnits[i].MaxHeat.ToString(), "Max heat production:");
                         ImGui.LabelText(ProductionUnits[i].MaxElectricity.ToString(), "Max electricity consumption/production:");
@@ -261,7 +262,7 @@ namespace HeatSync
 
                 if(ImGui.BeginTabItem("Heating Grid"))
                 {
-                    
+                    DrawTexture(HeatingGridTexture);
                     ImGui.LabelText(HeatingGridData.City, "Heating grid name:");
                     ImGui.LabelText(HeatingGridData.Size, "Heating grid size:");
                     ImGui.LabelText(HeatingGridData.Architecture, "Heating grid architecture:");
@@ -344,9 +345,9 @@ namespace HeatSync
             return texture;
         }
 
-        private void DrawTexture(Texture2D Texture, int PosX, int PosY)
+        private void DrawTexture(Texture2D Texture)
         {
-            Raylib.DrawTexture(Texture, PosX, PosY, Color.White);
+            ImGui.Image((nint)Texture.Id, new Vector2(Texture.Width, Texture.Height));
         }
     }
 }
