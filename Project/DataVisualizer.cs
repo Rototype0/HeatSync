@@ -13,6 +13,7 @@ namespace HeatSync
             get { return isImGUIWindowOpen; }
         }
         private ProductionUnit[] ProductionUnits = [];
+        Vector4[] ProductionUnitColors = [];
         private List<List<ResultData>> ResultDataListByProductionUnit = [];
         private float[] HeatDemand = [];
         private float[] ElectricityPrices = [];
@@ -43,7 +44,7 @@ namespace HeatSync
             ImGui.SetCurrentContext(context);
 
             controller = new ImGuiController();
-            
+
             UpdateData(Data, GridData, ProductionUnits, WriteRecords);
         }
 
@@ -51,11 +52,13 @@ namespace HeatSync
         {
             this.ProductionUnits = ProductionUnits.ToArray();
 
+            ProductionUnitColors = GenerateColors(this.ProductionUnits.Length).ToArray();
+
             ResultDataListByProductionUnit = SeparateResultDataListByProductionUnit(WriteRecords);
             CollectiveCO2Emissions = new float[Data.Count];
             CollectiveProductionCosts = new float[Data.Count];
             SeparateCO2Emissions = [];
-            SeparateHeatDemand = [];
+            SeparateHeatDemand = new List<float[]>();
             SeparateGasConsumption = [];
 
             for (int i = 0; i < ProductionUnits.Count; i++)
@@ -98,10 +101,10 @@ namespace HeatSync
 
         private List<List<ResultData>> SeparateResultDataListByProductionUnit(List<ResultData> ResultDataList)
         {
-            List<List<ResultData>> SeparatedListByProductionUnit = [];
-            List<List<ResultData>> SeparatedList = [];
-            List<ResultData> CurrentBoilerStack = [ResultDataList[0]];
-            DateTime CurrentUpperTimeLimit = ResultDataList[0].TimeFrom;
+            List<List<ResultData>> SeparatedListByProductionUnit = new List<List<ResultData>>();
+            List<List<ResultData>> SeparatedList = new List<List<ResultData>>();
+            List<ResultData> CurrentBoilerStack = new List<ResultData>();
+            DateTime CurrentUpperTimeLimit = ResultDataList[0].TimeTo;
 
             foreach (var SamplePoint in ResultDataList)
             {
@@ -109,10 +112,12 @@ namespace HeatSync
                 {
                     SeparatedList.Add(CurrentBoilerStack);
                     CurrentUpperTimeLimit = SamplePoint.TimeTo;
-                    CurrentBoilerStack = [];
+                    CurrentBoilerStack = new List<ResultData>();
                 }
                 CurrentBoilerStack.Add(SamplePoint);
             }
+
+            SeparatedList.Add(CurrentBoilerStack);
 
             foreach (List<ResultData> BoilerStack in SeparatedList)
             {
@@ -198,7 +203,8 @@ namespace HeatSync
                 ImGui.BeginTabBar("Settings#left_tabs_bar");
                 if (ImGui.BeginTabItem("General Information"))
                 {
-                    RenderPlotLines(HeatDemand, "Heat Production");
+                    //RenderPlotLines(HeatDemand, "Heat Production");
+                    RenderPlotMultipleHistogram(SeparateHeatDemand.ToArray(), "Segmented Heat Production");
                     RenderPlotHistogram(CollectiveCO2Emissions, "Collective CO2 Emissions");
                     RenderTable(CollectiveProductionCosts, "Fuel expenses", 3);
 
@@ -230,6 +236,7 @@ namespace HeatSync
                 {
                     ImGui.SliderInt("Font scale:", ref FontScale, 1, 5);
                     ImGui.SetWindowFontScale(FontScale);
+                    ImGui.ShowStyleEditor();
                     ImGui.EndTabItem();
                 }
 
@@ -307,8 +314,83 @@ namespace HeatSync
         {
             if (ImGui.CollapsingHeader(Label, ImGuiTreeNodeFlags.DefaultOpen))
             {
-                ImGui.PlotLines("", ref samples[0], samples.Length, 0, Label, samples.Min(), samples.Max() + samples.Max() / 10, new System.Numerics.Vector2(ImGui.GetWindowSize().X - 16, 250));
+                ImGui.PlotLines("", ref samples[0], samples.Length, 0, Label, samples.Min(), samples.Max() + samples.Max() / 10, new Vector2(ImGui.GetWindowSize().X - 16, 250));
             }
+        }
+
+        private void RenderPlotMultipleHistogram(float[][] SampleArray, string Label)
+        {
+            ImGuiStylePtr CurrentStyle = ImGui.GetStyle();
+            var CurrentTextColor = CurrentStyle.Colors[(int)ImGuiCol.Text];
+            var CurrentPlotColor = CurrentStyle.Colors[(int)ImGuiCol.PlotHistogram];
+            var CurrentFrameBGColor = CurrentStyle.Colors[(int)ImGuiCol.FrameBg];
+            var CurrentFrameBGHoveredColor = CurrentStyle.Colors[(int)ImGuiCol.FrameBgHovered];
+            var CurrentFrameBGActiveColor = CurrentStyle.Colors[(int)ImGuiCol.FrameBgActive];
+            
+
+            if (ImGui.CollapsingHeader(Label, ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                float[] RenderedSamples = (float[])HeatDemand.Clone();
+                Vector2 CursorPos = ImGui.GetCursorPos();
+
+                //ImGui.PlotHistogram("", ref RenderedSamples[0], RenderedSamples.Length, 0, Label, HeatDemand.Min(), HeatDemand.Max() + HeatDemand.Max() / 10, new Vector2(ImGui.GetWindowSize().X - 16, 250));
+
+                //CurrentStyle.Colors[(int)ImGuiCol.FrameBg] = Vector4.Zero;
+                CurrentStyle.Colors[(int)ImGuiCol.FrameBgHovered] = Vector4.Zero;
+                CurrentStyle.Colors[(int)ImGuiCol.FrameBgActive] = Vector4.Zero;
+
+                for (int i = 0; i < SampleArray.Length; i++)
+                {
+                    CurrentStyle.Colors[(int)ImGuiCol.PlotHistogram] = ProductionUnitColors[i];
+                    ImGui.SetCursorPos(CursorPos);
+
+                    ImGui.PlotHistogram("", ref RenderedSamples[0], RenderedSamples.Length, 0, Label, HeatDemand.Min(), HeatDemand.Max() + HeatDemand.Max() / 10, new Vector2(ImGui.GetWindowSize().X - 16, 250));
+
+                    for (int y = 0; y < RenderedSamples.Length; y++)
+                    {
+                        float value = SampleArray[i][y];
+                        RenderedSamples[y] = RenderedSamples[y] - SampleArray[i][y];
+                        if(RenderedSamples[y] < 0.001)
+                        {
+                            RenderedSamples[y] = 0;
+                        }
+                    }
+                    CurrentStyle.Colors[(int)ImGuiCol.FrameBg] = Vector4.Zero;
+                }
+
+                CurrentStyle.Colors[(int)ImGuiCol.PlotHistogram] = CurrentPlotColor;
+                CurrentStyle.Colors[(int)ImGuiCol.FrameBg] = CurrentFrameBGColor;
+                CurrentStyle.Colors[(int)ImGuiCol.FrameBgHovered] = CurrentFrameBGHoveredColor;
+                CurrentStyle.Colors[(int)ImGuiCol.FrameBgActive] = CurrentFrameBGActiveColor;
+                
+                for (int i = 0; i < ProductionUnits.Length; i++)
+                {
+                    CurrentStyle.Colors[(int)ImGuiCol.Text] = ProductionUnitColors[i];
+                    ImGui.Text(ResultDataListByProductionUnit[i][0].ProductionUnitName);
+                    ImGui.SameLine();
+                }
+
+                CurrentStyle.Colors[(int)ImGuiCol.Text] = CurrentTextColor;
+                ImGui.Text("");
+            }
+        }
+
+        private List<Vector4> GenerateColors(int Amount)
+        {
+            Random r = new Random();
+            List<Vector4> Colors = new List<Vector4>();
+
+            float CurrentHue = 0f;
+
+            for (int i = 0; i < Amount; i++)
+            {
+                //Golden Angle
+                var CurrentColor = Raylib.ColorFromHSV(CurrentHue, 1, 1f);
+                Colors.Add((Raylib.ColorNormalize(CurrentColor) + Vector4.One) / 2);
+                CurrentHue += 137.5f;
+            }
+
+            return Colors;
         }
 
         private void InputHandling()
