@@ -236,7 +236,6 @@ namespace HeatSync
                 {
                     ImGui.SliderInt("Font scale:", ref FontScale, 1, 5);
                     ImGui.SetWindowFontScale(FontScale);
-                    ImGui.ShowStyleEditor();
                     ImGui.EndTabItem();
                 }
 
