@@ -4,7 +4,7 @@ using Raylib_cs;
 
 namespace HeatSync
 {
-    internal class DataVisualizer : IDataVisualizer
+    public class DataVisualizer : IDataVisualizer
     {
         public bool UpdateDataFlag;
         private bool isImGUIWindowOpen;
@@ -47,7 +47,7 @@ namespace HeatSync
 
             UpdateData(Data, GridData, ProductionUnits, WriteRecords);
         }
-
+        public DataVisualizer(){}
         public void UpdateData(List<SourceData> Data, HeatingGrid GridData, List<ProductionUnit> ProductionUnits, List<ResultData> WriteRecords)
         {
             this.ProductionUnits = ProductionUnits.ToArray();
@@ -99,7 +99,7 @@ namespace HeatSync
             }
         }
 
-        private List<List<ResultData>> SeparateResultDataListByProductionUnit(List<ResultData> ResultDataList)
+        public List<List<ResultData>> SeparateResultDataListByProductionUnit(List<ResultData> ResultDataList)
         {
             List<List<ResultData>> SeparatedListByProductionUnit = new List<List<ResultData>>();
             List<List<ResultData>> SeparatedList = new List<List<ResultData>>();
