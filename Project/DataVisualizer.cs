@@ -22,7 +22,7 @@ namespace HeatSync
         private List<float[]> SeparateCO2Emissions = [];
         private List<float[]> SeparateHeatDemand = [];
         private List<float[]> SeparateGasConsumption = [];
-        internal ImGuiController controller;
+        internal ImGuiController? controller;
         private ImGuiWindowFlags ImGuiWindowFlags;
         private ConfigFlags RaylibWindowFlags;
         private int FontScale = 1;
@@ -171,8 +171,8 @@ namespace HeatSync
 
         public void Render()
         {
-            controller.NewFrame();
-            controller.ProcessEvent();
+            controller?.NewFrame();
+            controller?.ProcessEvent();
 
             ImGui.NewFrame();
             ImGui.SetNextWindowPos(new Vector2(0, 0));
@@ -276,7 +276,7 @@ namespace HeatSync
             Raylib.ClearBackground(Color.Blank);
 
             ImGui.Render();
-            controller.Render(ImGui.GetDrawData());
+            controller?.Render(ImGui.GetDrawData());
 
             Raylib.EndDrawing();
         }

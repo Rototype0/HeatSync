@@ -14,6 +14,7 @@ namespace HeatSync
             
             Optimizer optimizer = new();
             
+            // Sometimes (especially during morning), the API doesn't work and the program crashes 
             List<SourceData> data = sourceDataManager.ReadAPISourceData().Result;
             List<SourceData> initialData = sourceDataManager.ReadSourceData("summertest");
 
@@ -38,7 +39,7 @@ namespace HeatSync
                 }
             }
 
-            MainWindow.controller.Shutdown();
+            MainWindow.controller?.Shutdown();
         }
     }
 }
