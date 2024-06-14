@@ -23,7 +23,7 @@ namespace HeatSync
 
             List<ProductionUnit> productionUnits = assetManager.GetAllProductionUnits();
 
-            List<ResultData> writeRecords = optimizer.OptimizeData(productionUnits, data);
+            List<ResultData> writeRecords = optimizer.OptimizeData(productionUnits, initialData);
 
             DataVisualizer MainWindow = new DataVisualizer(1280, 720, initialData, gridData, productionUnits, writeRecords);
 
