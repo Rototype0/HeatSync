@@ -14,9 +14,10 @@ namespace HeatSync
             
             Optimizer optimizer = new();
             
-            // Sometimes (especially during morning), the API doesn't work and the program crashes, hence it's not used by default 
-            //List<SourceData> data = sourceDataManager.ReadAPISourceData().Result;
-            List<SourceData> data = sourceDataManager.ReadSourceData("wintertest");
+            Task<List<SourceData>> dataTask = sourceDataManager.ReadAPISourceData();
+            List<SourceData> data = dataTask.Result;
+            data ??= sourceDataManager.ReadSourceData("wintertest");
+            
             List<SourceData> initialData = sourceDataManager.ReadSourceData("summertest");
 
             HeatingGrid gridData = assetManager.LoadHeatingGridData(File.ReadAllText("StaticAssets\\HeatingGrids\\heatington.json"));
