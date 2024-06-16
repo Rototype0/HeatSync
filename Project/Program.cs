@@ -16,7 +16,7 @@ namespace HeatSync
             
             Task<List<SourceData>> dataTask = sourceDataManager.ReadAPISourceData();
             List<SourceData> data = dataTask.Result;
-            data ??= sourceDataManager.ReadSourceData("wintertest");
+            data = sourceDataManager.ReadSourceData("wintertest");
             
             List<SourceData> initialData = sourceDataManager.ReadSourceData("summertest");
 
